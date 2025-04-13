@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgModel } from '@angular/forms';
 import {
   PathwayService,
   Pathway,
@@ -18,6 +18,18 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatBadgeModule } from '@angular/material/badge';
 import { switchMap, map, forkJoin, of, Observable } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import { ConfirmDeleteDialogComponent } from './confirm-delete-dialog/confirm-delete-dialog.component';
+
+// Custom validator function for minimum word count
+function hasMinimumWords(minWords: number) {
+  return (control: NgModel) => {
+    if (!control.value) {
+      return null;
+    }
+    const wordCount = control.value.trim().split(/\s+/).length;
+    return wordCount >= minWords ? null : { minWords: true };
+  };
+}
 
 @Component({
   selector: 'app-pathways',
@@ -33,6 +45,7 @@ import { catchError } from 'rxjs/operators';
     MatChipsModule,
     MatBadgeModule,
     PathwayDetailsDialogComponent,
+    ConfirmDeleteDialogComponent
   ],
   templateUrl: './pathways.component.html',
   styleUrls: ['./pathways.component.css'],
@@ -57,6 +70,15 @@ export class PathwaysComponent implements OnInit {
   };
   showDetailsDialog = false;
   selectedPathway: Pathway | null = null;
+
+  // Validation states
+  isNameValid: boolean = true;
+  isDescriptionValid: boolean = true;
+
+  // Delete confirmation dialog
+  showDeleteDialog = false;
+  pathwayToDelete: string | null = null;
+  pathwayToDeleteName: string = '';
 
   constructor(
     private pathwayService: PathwayService,
@@ -153,6 +175,14 @@ export class PathwaysComponent implements OnInit {
   }
 
   createPathway(): void {
+    // Validate before creating
+    this.validateNameOnBlur();
+    this.validateDescriptionOnBlur();
+
+    if (!this.isNameValid || !this.isDescriptionValid) {
+      return;
+    }
+
     if (!this.formModel.name) {
       this.showNotification('Pathway name is required', 'error');
       return;
@@ -190,22 +220,35 @@ export class PathwaysComponent implements OnInit {
     this.selectedPathway = null;
   }
 
-  deletePathway(id: string): void {
-    if (confirm('Are you sure you want to delete this pathway?')) {
-      this.pathwayService.deletePathway(id).subscribe({
-        next: () => {
-          this.showNotification('Pathway deleted successfully', 'success');
-          this.loadPathways();
-        },
-        error: (error) => {
-          this.showNotification(
-            error.error?.message || 'Error deleting pathway',
-            'error'
-          );
-          console.error('Error deleting pathway:', error);
-        },
-      });
+  deletePathway(pathwayId: string, pathwayName: string): void {
+    this.pathwayToDelete = pathwayId;
+    this.pathwayToDeleteName = pathwayName;
+    this.showDeleteDialog = true;
+  }
+
+  confirmDelete(): void {
+    if (!this.pathwayToDelete) {
+      return;
     }
+
+    this.pathwayService.deletePathway(this.pathwayToDelete).subscribe({
+      next: () => {
+        this.showNotification('Pathway deleted successfully', 'success');
+        this.loadPathways();
+      },
+      error: (error) => {
+        console.error('Error deleting pathway:', error);
+        this.showNotification('Error deleting pathway', 'error');
+      }
+    });
+
+    this.closeDeleteDialog();
+  }
+
+  closeDeleteDialog(): void {
+    this.showDeleteDialog = false;
+    this.pathwayToDelete = null;
+    this.pathwayToDeleteName = '';
   }
 
   onEnrollStudent(event: { pathwayId: string; userId: string }) {
@@ -321,5 +364,43 @@ export class PathwaysComponent implements OnInit {
         console.error('Error updating pathway:', error);
       },
     });
+  }
+
+  // Validation methods
+  validateNameOnBlur(): void {
+    if (!this.formModel.name) {
+      this.isNameValid = true; // Don't show error if empty (required will handle that)
+      return;
+    }
+
+    this.isNameValid = this.formModel.name.length >= 3;
+
+    if (!this.isNameValid) {
+      this.snackBar.open('Pathway name must be at least 3 characters long', 'Close', {
+        duration: 3000,
+        panelClass: ['error-snackbar'],
+        verticalPosition: 'top',
+        horizontalPosition: 'right'
+      });
+    }
+  }
+
+  validateDescriptionOnBlur(): void {
+    if (!this.formModel.description) {
+      this.isDescriptionValid = true; // Don't show error if empty (required will handle that)
+      return;
+    }
+
+    const wordCount = this.formModel.description.trim().split(/\s+/).length;
+    this.isDescriptionValid = wordCount >= 5;
+
+    if (!this.isDescriptionValid) {
+      this.snackBar.open('Description must contain at least 5 words', 'Close', {
+        duration: 3000,
+        panelClass: ['error-snackbar'],
+        verticalPosition: 'top',
+        horizontalPosition: 'right'
+      });
+    }
   }
 }
