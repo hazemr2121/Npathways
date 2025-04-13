@@ -7,14 +7,14 @@ import {
   Stack,
   TextField,
   Typography,
+  FormHelperText,
 } from "@mui/material";
 import axios from "axios";
 import React, { useContext, useEffect, useRef, useState } from "react";
-import { InstructorAuthContext } from "../../contexts/InstructorAuthContext";
 import { AuthContext } from "../../contexts/AuthContext";
+import * as yup from "yup";
 
 export default function InstructorProfileSection() {
-  // const { isAuthenticated } = useContext(InstructorAuthContext);
   const { isAuthenticated } = useContext(AuthContext);
   const instructorID = localStorage.getItem("instructorID");
   const [instructorData, setInstructorData] = useState(null);
@@ -24,6 +24,10 @@ export default function InstructorProfileSection() {
     firstName: "",
     lastName: "",
     email: "",
+  });
+  const [formErrors, setFormErrors] = useState({
+    firstName: "",
+    lastName: "",
   });
   const [isEditing, setIsEditing] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -72,6 +76,7 @@ export default function InstructorProfileSection() {
         console.error("Error uploading image:", error);
       });
   }
+
   // Fetch instructor data from the API
   useEffect(() => {
     const fetchInstructorData = async () => {
@@ -108,17 +113,73 @@ export default function InstructorProfileSection() {
     });
   };
 
+  const validationSchema = yup.object({
+    firstName: yup
+      .string()
+      .trim()
+      .required("First name is required")
+      .min(3, "First name must be at least 3 characters")
+      .max(30, "First name should not exceed 30 characters")
+      .matches(/^[a-zA-Z\s]+$/, "First name should contain only letters"),
+    lastName: yup
+      .string()
+      .trim()
+      .required("Last name is required")
+      .min(3, "Last name must be at least 3 characters")
+      .max(30, "Last name should not exceed 30 characters")
+      .matches(/^[a-zA-Z\s]+$/, "Last name should contain only letters"),
+  });
+
+  const validateField = (name, value) => {
+    try {
+      // Validate just the field with the provided name and value
+      validationSchema.validateSyncAt(name, { [name]: value });
+      return "";
+    } catch (error) {
+      return error.message;
+    }
+  };
+
+  const handleBlur = (e) => {
+    if (!isEditing) return;
+
+    const { name, value } = e.target;
+    const errorMessage = validateField(name, value);
+
+    setFormErrors((prev) => ({
+      ...prev,
+      [name]: errorMessage,
+    }));
+  };
+
+  const validateForm = () => {
+    const errors = {
+      firstName: validateField("firstName", formData.firstName),
+      lastName: validateField("lastName", formData.lastName),
+    };
+
+    setFormErrors(errors);
+
+    return !Object.values(errors).some((error) => error);
+  };
+
   const handleEdit = () => {
     setIsEditing(true);
   };
 
   const handleSave = async () => {
     try {
+      // Validate all fields before saving
+      if (!validateForm()) {
+        return;
+      }
+
       // You would implement the API call to update instructor data here
       // For now, just simulate a successful update
       setInstructorData({
         ...instructorData,
-        ...formData,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
       });
       setIsEditing(false);
       setSaveSuccess(true);
@@ -138,10 +199,12 @@ export default function InstructorProfileSection() {
       lastName: instructorData.lastName,
       email: instructorData.email,
     });
+    setFormErrors({
+      firstName: "",
+      lastName: "",
+    });
     setIsEditing(false);
   };
-
-  console.log(isAuthenticated);
 
   if (!isAuthenticated) {
     return (
@@ -221,33 +284,53 @@ export default function InstructorProfileSection() {
 
       {/* Profile Form Fields */}
       <Stack spacing={2} sx={{ width: "100%", maxWidth: 500 }}>
-        <TextField
-          fullWidth
-          label="First Name"
-          name="firstName"
-          value={formData.firstName}
-          onChange={handleChange}
-          variant="outlined"
-          disabled={!isEditing}
-        />
-        <TextField
-          fullWidth
-          label="Last Name"
-          name="lastName"
-          value={formData.lastName}
-          onChange={handleChange}
-          variant="outlined"
-          disabled={!isEditing}
-        />
-        <TextField
-          fullWidth
-          label="Email"
-          name="email"
-          value={formData.email}
-          onChange={handleChange}
-          variant="outlined"
-          disabled={!isEditing}
-        />
+        <Box>
+          <TextField
+            fullWidth
+            label="First Name"
+            name="firstName"
+            value={formData.firstName}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            variant="outlined"
+            disabled={!isEditing}
+            error={!!formErrors.firstName}
+          />
+          {formErrors.firstName && (
+            <FormHelperText error>{formErrors.firstName}</FormHelperText>
+          )}
+        </Box>
+
+        <Box>
+          <TextField
+            fullWidth
+            label="Last Name"
+            name="lastName"
+            value={formData.lastName}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            variant="outlined"
+            disabled={!isEditing}
+            error={!!formErrors.lastName}
+          />
+          {formErrors.lastName && (
+            <FormHelperText error>{formErrors.lastName}</FormHelperText>
+          )}
+        </Box>
+
+        <Box>
+          <TextField
+            fullWidth
+            label="Email"
+            value={instructorData.email}
+            variant="outlined"
+            disabled={true}
+            InputProps={{
+              readOnly: true,
+            }}
+          />
+          <FormHelperText>Email cannot be changed</FormHelperText>
+        </Box>
 
         {isEditing ? (
           <Stack direction="row" spacing={2} justifyContent="center">

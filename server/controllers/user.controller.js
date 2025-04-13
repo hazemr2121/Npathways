@@ -39,7 +39,7 @@ const userController = {
       const message = `We have received a Verify Email request. please use the below link to Verify Account : 
       \n\n ${reseUrl} \n\n This verify Link will be valid only for 15 minutes `;
 
-      console.log(reseUrl);
+      // console.log(reseUrl);
 
       sendEmail({
         email: newUser.email,
@@ -94,6 +94,55 @@ const userController = {
       });
     }
   },
+  resendVerifyEmail: async (req, res) => {
+    try {
+      if (!req.body.email) {
+        return res.status(400).send({
+          message: "Email is required",
+        });
+      }
+
+      const email = req.body.email.toLowerCase();
+
+      const user = await User.findOne({ email });
+
+      if (!user) {
+        return res.status(404).send({
+          message: "User not found",
+        });
+      }
+
+      if (user.verify) {
+        return res.status(400).send({
+          message: "User already verified",
+        });
+      }
+      const resetToken = jwt.sign({ id: user._id }, process.env.VERIFY_KEY);
+      const reseUrl = `http://localhost:5173/verifyEmail/${resetToken}`;
+      const message = `We have received a Verify Email request. please use the below link to Verify Account :
+      \n\n ${reseUrl} \n\n This verify Link will be valid only for 15 minutes `;
+      // console.log(reseUrl);
+
+      sendEmail({
+        email: user.email,
+        subject: "Verify Your Email Address",
+        templateName: "verify-email",
+        templateData: {
+          name: `${user.firstName} ${user.lastName}`,
+          verificationUrl: reseUrl,
+          year: new Date().getFullYear(),
+        },
+      });
+      return res.status(201).send({
+        message: "Verify Email Sent Successfully",
+      });
+    } catch (error) {
+      console.error("Resend Verify Email Error:", error);
+      return res.status(500).send({
+        message: "Error:" + error.message,
+      });
+    }
+  },
   // todo optimize login for universal login
   login: async (req, res) => {
     try {
@@ -137,7 +186,7 @@ const userController = {
           courses: user.courses,
         });
       } else {
-        return res.send({
+        return res.status(400).send({
           message: "Please Verify Your Email First",
         });
       }

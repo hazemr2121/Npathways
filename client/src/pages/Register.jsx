@@ -47,6 +47,21 @@ const validationSchema = Yup.object().shape({
     .required("Please accept the terms and conditions to continue"),
 });
 
+async function CheckIfEmailExists(email) {
+  return axios
+    .post(`http://localhost:5024/api/availableEmail`, { email })
+    .then((response) => {
+      if (response.data.exists) {
+        return Promise.reject(new Error("Email already exists"));
+      }
+      return Promise.resolve();
+    })
+    .catch((error) => {
+      console.error("Error checking email:", error);
+      return Promise.reject(new Error("Error checking email"));
+    });
+}
+
 const Register = () => {
   const [apiError, setApiError] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
