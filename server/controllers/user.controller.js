@@ -32,7 +32,7 @@ const userController = {
       let newUser = new User(data);
       await newUser.save();
       // Verify /////////////////////////
-      const resetToken = jwt.sign({id:newUser._id},process.env.VERIFY_KEY);
+      const resetToken = jwt.sign({ id: newUser._id }, process.env.VERIFY_KEY);
       console.log(resetToken);
       // await data.save({ validateeforeSave: false });
       const reseUrl = `${req.protocol}://${req.headers.host}/api/auth/VerifyEmail/${resetToken}`;
@@ -40,11 +40,11 @@ const userController = {
       \n\n ${reseUrl} \n\n This verify Link will be valid only for 15 minutes `;
       console.log(reseUrl);
       sendEmail({
-          email:data.email,
-          subject: "Verify Email",
-          message: message,
-      })
-   
+        email: data.email,
+        subject: "Verify Email",
+        message: message,
+      });
+
       return res.status(201).send({
         message: "Account Created Successfully",
       });
@@ -55,29 +55,32 @@ const userController = {
       });
     }
   },
-  VerifyEmail:async(req,res)=>{
-      try {
-        let {token}=req.params
-        jwt.verify(token,process.env.VERIFY_KEY,async(error,decoded)=>{
-            if(error){
-              res.send(error)
-            }
-            let updateUser=  await User.findByIdAndUpdate(decoded.id,{verify:true},{new:true})
-            res.json({message:updateUser})
-
-        })
-      }catch(error){
-        console.error("Verify User Error:", error);
-        return res.status(500).send({
-          message: error.message,
-        });
-      }
+  VerifyEmail: async (req, res) => {
+    try {
+      let { token } = req.params;
+      jwt.verify(token, process.env.VERIFY_KEY, async (error, decoded) => {
+        if (error) {
+          res.send(error);
+        }
+        let updateUser = await User.findByIdAndUpdate(
+          decoded.id,
+          { verify: true },
+          { new: true }
+        );
+        res.json({ message: updateUser });
+      });
+    } catch (error) {
+      console.error("Verify User Error:", error);
+      return res.status(500).send({
+        message: error.message,
+      });
+    }
   },
   // todo optimize login for universal login
   login: async (req, res) => {
     try {
       let { email, password } = req.body;
-       email = email.toLowerCase();
+      email = email.toLowerCase();
       let user = await User.findOne({ email })
         .populate("pathways")
         .populate("courses");
@@ -86,7 +89,7 @@ const userController = {
           message: "Invalid Email Or Password",
         });
       }
-      if(user.verify){
+      if (user.verify) {
         let validPassword = await bcrypt.compare(password, user.password);
         if (!validPassword) {
           return res.status(404).send({
@@ -99,7 +102,7 @@ const userController = {
           httpOnly: true,
           maxAge: 60 * 60 * 24 * 2 * 1000,
         });
-  
+
         user.tokens.push(token);
         if (user.tokens.length > 2) {
           user.tokens = user.tokens.slice(-2);
@@ -115,16 +118,14 @@ const userController = {
           pathways: user.pathways,
           courses: user.courses,
         });
-
-      }else {
+      } else {
         return res.send({
           message: "Please Verify Your Email First",
-        }) 
+        });
       }
 
       // console.log("Updated User:", user);
       // console.log("Updated User:", user);
-       
     } catch (error) {
       console.error("Login Error:", error);
       return res.status(500).send({
@@ -204,7 +205,7 @@ const userController = {
   changUserImage: async (req, res) => {
     try {
       const userId = req.user._id;
-       if (req.file) {
+      if (req.file) {
         const user = await User.findById(userId);
         const HOST = process.env.HOST || "http://localhost";
         const PORT = process.env.PORT || 5024;
@@ -282,13 +283,13 @@ const userController = {
         });
       }
       const resetToken = user.createResetPasswordToken();
-      console.log(resetToken);
+      // console.log(resetToken);
       await user.save({ validateeforeSave: false });
 
       const reseUrl = `${req.protocol}://${req.headers.host}/api/auth/resetPassword/${resetToken}`;
       const message = `We have received a password reset request. please use the below link to reset password : 
       \n\n ${reseUrl} \n\n This reset Password Link will be valid only for 15 minutes `;
-      console.log(reseUrl);
+      // console.log(reseUrl);
 
       try {
         await sendEmail({
@@ -313,15 +314,11 @@ const userController = {
   },
   resetPassword: async (req, res) => {
     try {
-      const { password, confirmPassword } = req.body;
+      const { password } = req.body;
       const email = req.body.email.toLowerCase();
 
-      if (!email || !password || !confirmPassword) {
+      if (!email || !password) {
         return res.status(400).send({ message: "All fields are required!" });
-      }
-
-      if (password !== confirmPassword) {
-        return res.status(400).json({ message: "Passwords do not match!" });
       }
 
       const token = crypto
@@ -339,7 +336,6 @@ const userController = {
       }
 
       user.password = password;
-      user.confirmPassword = confirmPassword;
       user.passwordResetToken = undefined;
       user.passwordResetExpires = undefined;
       user.changePasswordAt = Date.now();
