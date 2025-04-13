@@ -1,7 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  FormArray,
+  Validators,
+  ReactiveFormsModule,
+  FormsModule,
+} from '@angular/forms';
 import { ExamService, Exam } from '../../services/exam.service';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -25,10 +32,10 @@ import { ConfirmDialogComponent } from './confirm-dialog.component';
     MatSelectModule,
     MatIconModule,
     MatDialogModule,
-    MatSnackBarModule
+    MatSnackBarModule,
   ],
   templateUrl: './exam-details.component.html',
-  styleUrl: './exam-details.component.css'
+  styleUrl: './exam-details.component.css',
 })
 export class ExamDetailsComponent implements OnInit {
   examId: string = '';
@@ -59,7 +66,7 @@ export class ExamDetailsComponent implements OnInit {
     return this.fb.group({
       name: ['', Validators.required],
       timeLimit: ['', [Validators.required, Validators.min(1)]],
-      questions: this.fb.array([])
+      questions: this.fb.array([]),
     });
   }
 
@@ -67,14 +74,14 @@ export class ExamDetailsComponent implements OnInit {
     return this.fb.group({
       question: ['', Validators.required],
       difficulty: ['medium', Validators.required],
-      answers: this.fb.array([])
+      answers: this.fb.array([]),
     });
   }
 
   private createAnswerForm(): FormGroup {
     return this.fb.group({
       answer: ['', Validators.required],
-      isCorrect: [false]
+      isCorrect: [false],
     });
   }
 
@@ -94,37 +101,46 @@ export class ExamDetailsComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error loading exam details:', error);
-        this.showErrorNotification('Error loading exam details. Please try again.');
-      }
+        this.showErrorNotification(
+          'Error loading exam details. Please try again.'
+        );
+      },
     });
   }
 
-  patchFormWithExamData(exam: Exam): void {
+  private patchFormWithExamData(exam: Exam): void {
     this.examForm.patchValue({
       name: exam.name,
-      timeLimit: exam.timeLimit
+      timeLimit: exam.timeLimit,
     });
 
     const questionsFormArray = this.examForm.get('questions') as FormArray;
     questionsFormArray.clear();
 
-    exam.questions.forEach(question => {
+    exam.questions.forEach((question) => {
       const questionForm = this.createQuestionForm();
       questionForm.patchValue({
         question: question.question,
-        difficulty: question.difficulty
+        difficulty: question.difficulty,
       });
 
       const answersFormArray = questionForm.get('answers') as FormArray;
-      question.answers.forEach(answer => {
-        answersFormArray.push(this.fb.group({
-          answer: answer.answer,
-          isCorrect: answer.isCorrect
-        }));
+      question.answers.forEach((answer) => {
+        answersFormArray.push(
+          this.fb.group({
+            answer: answer.answer,
+            isCorrect: answer.isCorrect,
+          })
+        );
       });
 
       questionsFormArray.push(questionForm);
     });
+
+    // Disable form controls if not in edit mode
+    if (!this.isEditing) {
+      this.disableFormControls();
+    }
   }
 
   addQuestion(): void {
@@ -161,8 +177,54 @@ export class ExamDetailsComponent implements OnInit {
 
   toggleEdit(): void {
     this.isEditing = !this.isEditing;
+
     if (!this.isEditing) {
+      // Disable all controls
       this.patchFormWithExamData(this.exam!);
+      this.disableFormControls();
+    } else {
+      // Enable all controls
+      this.enableFormControls();
+    }
+  }
+
+  private disableFormControls(): void {
+    // Disable basic form controls
+    this.examForm.get('name')?.disable();
+    this.examForm.get('timeLimit')?.disable();
+
+    // Disable all question controls
+    for (let i = 0; i < this.questions.length; i++) {
+      const question = this.questions.at(i);
+      question.get('question')?.disable();
+      question.get('difficulty')?.disable();
+
+      // Disable all answer controls
+      const answers = this.getAnswers(i);
+      for (let j = 0; j < answers.length; j++) {
+        answers.at(j).get('answer')?.disable();
+        answers.at(j).get('isCorrect')?.disable();
+      }
+    }
+  }
+
+  private enableFormControls(): void {
+    // Enable basic form controls
+    this.examForm.get('name')?.enable();
+    this.examForm.get('timeLimit')?.enable();
+
+    // Enable all question controls
+    for (let i = 0; i < this.questions.length; i++) {
+      const question = this.questions.at(i);
+      question.get('question')?.enable();
+      question.get('difficulty')?.enable();
+
+      // Enable all answer controls
+      const answers = this.getAnswers(i);
+      for (let j = 0; j < answers.length; j++) {
+        answers.at(j).get('answer')?.enable();
+        answers.at(j).get('isCorrect')?.enable();
+      }
     }
   }
 
@@ -172,8 +234,15 @@ export class ExamDetailsComponent implements OnInit {
 
     for (let i = 0; i < questions.length; i++) {
       const answers = this.getAnswers(i);
-      if (answers.length < this.MIN_ANSWERS || answers.length > this.MAX_ANSWERS) {
-        alert(`Question ${i + 1} must have between ${this.MIN_ANSWERS} and ${this.MAX_ANSWERS} answers.`);
+      if (
+        answers.length < this.MIN_ANSWERS ||
+        answers.length > this.MAX_ANSWERS
+      ) {
+        alert(
+          `Question ${i + 1} must have between ${this.MIN_ANSWERS} and ${
+            this.MAX_ANSWERS
+          } answers.`
+        );
         isValid = false;
         break;
       }
@@ -187,23 +256,28 @@ export class ExamDetailsComponent implements OnInit {
         width: '400px',
         data: {
           title: 'Confirm Save',
-          message: 'Are you sure you want to save these changes to the exam?'
-        }
+          message: 'Are you sure you want to save these changes to the exam?',
+        },
       });
 
-      dialogRef.afterClosed().subscribe(result => {
+      dialogRef.afterClosed().subscribe((result) => {
         if (result) {
-          this.examService.updateExam(this.examId, this.examForm.value).subscribe({
-            next: (updatedExam) => {
-              this.exam = updatedExam;
-              this.isEditing = false;
-              this.showSuccessNotification('Exam updated successfully!');
-            },
-            error: (error) => {
-              console.error('Error updating exam:', error);
-              this.showErrorNotification(error.error?.message || 'Error updating exam. Please try again.');
-            }
-          });
+          this.examService
+            .updateExam(this.examId, this.examForm.value)
+            .subscribe({
+              next: (updatedExam) => {
+                this.exam = updatedExam;
+                this.isEditing = false;
+                this.showSuccessNotification('Exam updated successfully!');
+              },
+              error: (error) => {
+                console.error('Error updating exam:', error);
+                this.showErrorNotification(
+                  error.error?.message ||
+                    'Error updating exam. Please try again.'
+                );
+              },
+            });
         }
       });
     }
@@ -215,13 +289,18 @@ export class ExamDetailsComponent implements OnInit {
       this.examService.uploadQuestionsSheet(file, this.examId).subscribe({
         next: (response: any) => {
           console.log('File uploaded successfully:', response);
-          this.showSuccessNotification('Questions sheet uploaded successfully!');
+          this.showSuccessNotification(
+            'Questions sheet uploaded successfully!'
+          );
           this.loadExamDetails();
         },
         error: (error: any) => {
           console.error('Error uploading file:', error);
-          this.showErrorNotification(error.error?.message || 'Error uploading questions sheet. Please try again.');
-        }
+          this.showErrorNotification(
+            error.error?.message ||
+              'Error uploading questions sheet. Please try again.'
+          );
+        },
       });
     }
   }
@@ -231,7 +310,7 @@ export class ExamDetailsComponent implements OnInit {
       duration: 5000,
       panelClass: ['error-snackbar'],
       verticalPosition: 'top',
-      horizontalPosition: 'right'
+      horizontalPosition: 'right',
     });
   }
 
@@ -240,8 +319,7 @@ export class ExamDetailsComponent implements OnInit {
       duration: 3000,
       panelClass: ['success-snackbar'],
       verticalPosition: 'top',
-      horizontalPosition: 'right'
+      horizontalPosition: 'right',
     });
   }
 }
-

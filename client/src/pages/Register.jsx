@@ -8,6 +8,7 @@ import {
   Box,
   Checkbox,
   Link as MuiLink,
+  FormHelperText,
 } from "@mui/material";
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -15,14 +16,35 @@ import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
 
 const validationSchema = Yup.object().shape({
-  firstName: Yup.string().required("First Name is required"),
-  lastName: Yup.string().required("Last Name is required"),
+  firstName: Yup.string()
+    .trim()
+    .matches(/^[A-Za-z]+$/, "First name should contain only letters")
+    .min(3, "First name should be at least 3 characters")
+    .max(30, "First name should not exceed 30 characters")
+    .required("Please enter your first name"),
+  lastName: Yup.string()
+    .trim()
+    .matches(/^[A-Za-z]+$/, "Last name should contain only letters")
+    .min(3, "Last name should be at least 3 characters")
+    .max(30, "Last name should not exceed 30 characters")
+    .required("Please enter your last name"),
   email: Yup.string()
-    .email("Invalid email address")
-    .required("Email is required"),
+    .email("Please enter a valid email format")
+    .required("Email address is required")
+    .matches(
+      /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+      "Email format is invalid (e.g., example@domain.com)"
+    ),
   password: Yup.string()
-    // .min(8, "Password must be at least 8 characters")
-    .required("Required"),
+    .min(8, "Password must be at least 8 characters long")
+    .matches(/[0-9]/, "Password must include at least one number")
+    .matches(/[a-z]/, "Password must include at least one lowercase letter")
+    .matches(/[A-Z]/, "Password must include at least one uppercase letter")
+    .matches(/[^\w]/, "Password must include at least one special character")
+    .required("Please create a password"),
+  agreeToTerms: Yup.boolean()
+    .oneOf([true], "Please accept the terms and conditions to continue")
+    .required("Please accept the terms and conditions to continue"),
 });
 
 const Register = () => {
@@ -39,14 +61,18 @@ const Register = () => {
     lastName: "",
     email: "",
     password: "",
+    agreeToTerms: false,
   };
 
   async function sendDataToAPI(values) {
     try {
       setApiError(null);
+      // Remove agreeToTerms from data sent to API
+      const { agreeToTerms, ...dataToSend } = values;
+
       let { data } = await axios.post(
         `http://localhost:5024/api/user/signup`,
-        values
+        dataToSend
       );
       console.log(data);
       if (data.message === "Account Created Successfully") {
@@ -55,7 +81,10 @@ const Register = () => {
       }
     } catch (error) {
       console.log(error);
-      setApiError(error.response.data.message);
+      setApiError(
+        error.response?.data?.message ||
+          "Registration failed. Please try again."
+      );
     }
   }
 
@@ -194,6 +223,21 @@ const Register = () => {
                     borderRadius: "8px",
                   },
                 }}
+                InputProps={{
+                  endAdornment: (
+                    <Button
+                      onClick={handleShowPassword}
+                      sx={{
+                        minWidth: "auto",
+                        textTransform: "none",
+                        fontSize: "0.75rem",
+                        color: "text.secondary",
+                      }}
+                    >
+                      {showPassword ? "Hide" : "Show"}
+                    </Button>
+                  ),
+                }}
               />
             </Grid>
 
@@ -201,14 +245,20 @@ const Register = () => {
               <Box
                 sx={{
                   display: "flex",
-                  alignItems: "center",
-                  mb: 3,
+                  alignItems: "flex-start",
+                  mb: 1,
                 }}
               >
                 <Checkbox
                   size="small"
+                  id="agreeToTerms"
+                  name="agreeToTerms"
+                  checked={formik.values.agreeToTerms}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
                   sx={{
                     mr: 1,
+                    mt: 0,
                     color: "text.secondary",
                     "&.Mui-checked": {
                       color: "primary.main",
@@ -237,6 +287,12 @@ const Register = () => {
                   </a>
                 </Typography>
               </Box>
+              {formik.touched.agreeToTerms &&
+                Boolean(formik.errors.agreeToTerms) && (
+                  <FormHelperText error>
+                    {formik.errors.agreeToTerms}
+                  </FormHelperText>
+                )}
             </Grid>
 
             <Grid
@@ -299,32 +355,6 @@ const Register = () => {
                 alignItems: "center",
               }}
             >
-              {/* <Button
-                fullWidth
-                variant="outlined"
-                startIcon={
-                  <img
-                    src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-                    alt="Google"
-                    style={{ width: 18, height: 18 }}
-                  />
-                }
-                sx={{
-                  py: 1.5,
-                  textTransform: "none",
-                  fontSize: "0.9375rem",
-                  borderColor: "divider",
-                  color: "text.primary",
-                  borderRadius: "20px",
-                  width: "50%",
-                  "&:hover": {
-                    borderColor: "primary.main",
-                    bgcolor: "transparent",
-                  },
-                }}
-              >
-                Continue with Google
-              </Button> */}
               <Typography variant="body2" color="text.secondary">
                 Have an account?{" "}
                 <MuiLink
