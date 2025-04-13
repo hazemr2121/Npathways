@@ -2,7 +2,7 @@
   <div class="header-actions">
     <div class="d-flex gap-2">
       <button class="btn btn-primary" (click)="toggleEdit()">
-        {{ isEditing ? 'Cancel Edit' : 'Edit Exam' }}
+        {{ isEditing ? "Cancel Edit" : "Edit Exam" }}
       </button>
     </div>
   </div>
@@ -12,21 +12,11 @@
       <h2>Exam Details</h2>
       <div class="form-group">
         <label>Exam Name</label>
-        <input
-          type="text"
-          class="dark-input"
-          formControlName="name"
-          [readonly]="!isEditing"
-        />
+        <input type="text" class="dark-input" formControlName="name" />
       </div>
       <div class="form-group">
         <label>Time Limit (minutes)</label>
-        <input
-          type="number"
-          class="dark-input"
-          formControlName="timeLimit"
-          [readonly]="!isEditing"
-        />
+        <input type="number" class="dark-input" formControlName="timeLimit" />
       </div>
     </div>
 
@@ -35,19 +25,23 @@
         <h3>Questions</h3>
         <div class="d-flex gap-2">
           <button
-          *ngIf="isEditing"
-          type="button"
-          class="btn btn-success"
-          (click)="addQuestion()"
-        >
-          Add Question
-        </button>
-        <label class="btn btn-primary" *ngIf="isEditing">
-          <input type="file" (change)="onFileSelected($event)" accept=".xlsx,.xls" style="display: none;">
-          Upload Questions Sheet
-        </label>
+            *ngIf="isEditing"
+            type="button"
+            class="btn btn-success"
+            (click)="addQuestion()"
+          >
+            Add Question
+          </button>
+          <label class="btn btn-primary" *ngIf="isEditing">
+            <input
+              type="file"
+              (change)="onFileSelected($event)"
+              accept=".xlsx,.xls"
+              style="display: none"
+            />
+            Upload Questions Sheet
+          </label>
         </div>
-
       </div>
 
       <div formArrayName="questions" class="questions-list">
@@ -57,7 +51,7 @@
           class="question-card"
         >
           <div class="question-header">
-            <h4>Question {{i + 1}}</h4>
+            <h4>Question {{ i + 1 }}</h4>
             <button
               *ngIf="isEditing"
               type="button"
@@ -70,23 +64,14 @@
 
           <div class="form-group">
             <label>Question Text</label>
-            <input
-              type="text"
-              class="dark-input"
-              formControlName="question"
-              [readonly]="!isEditing"
-            />
+            <input type="text" class="dark-input" formControlName="question" />
           </div>
 
           <div class="form-group">
             <label>Difficulty</label>
-            <select
-              class="dark-input"
-              formControlName="difficulty"
-              [disabled]="!isEditing"
-            >
+            <select class="dark-input" formControlName="difficulty">
               <option *ngFor="let diff of difficulties" [value]="diff">
-                {{diff | titlecase}}
+                {{ diff | titlecase }}
               </option>
             </select>
           </div>
@@ -103,16 +88,11 @@
                   type="text"
                   class="dark-input"
                   formControlName="answer"
-                  [readonly]="!isEditing"
                   placeholder="Answer text"
                 />
                 <div class="answer-actions">
                   <label class="checkbox-container">
-                    <input
-                      type="checkbox"
-                      formControlName="isCorrect"
-                      [disabled]="!isEditing"
-                    />
+                    <input type="checkbox" formControlName="isCorrect" />
                     <span class="checkmark"></span>
                     Correct
                   </label>
@@ -141,7 +121,11 @@
     </div>
 
     <div class="form-actions" *ngIf="isEditing">
-      <button type="submit" class="btn btn-primary" [disabled]="!examForm.valid">
+      <button
+        type="submit"
+        class="btn btn-primary"
+        [disabled]="!examForm.valid"
+      >
         Save Changes
       </button>
     </div>
