@@ -1,11 +1,26 @@
-import { Avatar, CircularProgress, Grid2, Typography } from "@mui/material";
+import {
+  Avatar,
+  CircularProgress,
+  Grid2,
+  Typography,
+  TextField,
+  InputAdornment,
+  Box,
+  Pagination,
+  Stack,
+  Chip,
+} from "@mui/material";
+import { Search } from "@mui/icons-material";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 
 export default function MyStudentsInstructor() {
   const [isLoading, setIsLoading] = useState(false);
-  //! Replace with API call
   const [students, setStudents] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [page, setPage] = useState(1);
+  const rowsPerPage = 8; // Number of students per page
+
   useEffect(() => {
     const fetchStudents = async () => {
       setIsLoading(true);
@@ -27,8 +42,49 @@ export default function MyStudentsInstructor() {
     fetchStudents();
   }, []);
 
+  // Filter students based on search term
+  const filteredStudents = students.filter((student) =>
+    `${student.firstName} ${student.lastName}`
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase())
+  );
+
+  // Calculate pagination
+  const totalPages = Math.ceil(filteredStudents.length / rowsPerPage);
+  const displayedStudents = filteredStudents.slice(
+    (page - 1) * rowsPerPage,
+    page * rowsPerPage
+  );
+
+  const handleSearchChange = (event) => {
+    setSearchTerm(event.target.value);
+    setPage(1); // Reset to first page when searching
+  };
+
+  const handlePageChange = (event, newPage) => {
+    setPage(newPage);
+  };
+
   return (
     <>
+      {/* Search Box */}
+      <Box mb={3}>
+        <TextField
+          fullWidth
+          variant="outlined"
+          placeholder="Search students by name..."
+          value={searchTerm}
+          onChange={handleSearchChange}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <Search />
+              </InputAdornment>
+            ),
+          }}
+        />
+      </Box>
+
       <Grid2
         container
         spacing={2}
@@ -39,14 +95,14 @@ export default function MyStudentsInstructor() {
         <Grid2 item textAlign="center" size={1}>
           <Typography sx={{ color: "text.gray" }}>Picture</Typography>
         </Grid2>
-        <Grid2 item textAlign="center" size={5}>
+        <Grid2 item textAlign="center" size={4}>
           <Typography sx={{ color: "text.gray" }}>Name</Typography>
         </Grid2>
-        <Grid2 item textAlign="center" size={5}>
+        <Grid2 item textAlign="center" size={4}>
           <Typography sx={{ color: "text.gray" }}>Course Name</Typography>
         </Grid2>
-        <Grid2 item textAlign="center" size={1}>
-          <Typography sx={{ color: "text.gray" }}>Grade</Typography>
+        <Grid2 item textAlign="center" size={3}>
+          <Typography sx={{ color: "text.gray" }}>Passed Exams</Typography>
         </Grid2>
       </Grid2>
 
@@ -64,7 +120,7 @@ export default function MyStudentsInstructor() {
         </Grid2>
       )}
 
-      {!isLoading && students.length === 0 && (
+      {!isLoading && filteredStudents.length === 0 && (
         <Grid2
           container
           spacing={2}
@@ -79,8 +135,8 @@ export default function MyStudentsInstructor() {
       )}
 
       {!isLoading &&
-        students.length > 0 &&
-        students.map((student) => (
+        displayedStudents.length > 0 &&
+        displayedStudents.map((student) => (
           <Grid2
             container
             spacing={2}
@@ -102,17 +158,37 @@ export default function MyStudentsInstructor() {
                 {student.firstName[0] + student.lastName[0]}
               </Avatar>
             </Grid2>
-            <Grid2 item textAlign="center" size={5}>
+            <Grid2 item textAlign="center" size={4}>
               <Typography>{`${student.firstName} ${student.lastName}`}</Typography>
             </Grid2>
-            <Grid2 item textAlign="center" size={5}>
+            <Grid2 item textAlign="center" size={4}>
               <Typography>{student.courseNames}</Typography>
             </Grid2>
-            <Grid2 item textAlign="center" size={1}>
-              <Typography>100%</Typography>
+            <Grid2 item textAlign="center" size={3}>
+              <Chip
+                label={`${student.passedExams || 0}/${student.totalExams || 0}`}
+                size="small"
+                color="primary"
+                variant="outlined"
+                sx={{ fontWeight: "medium" }}
+              />
             </Grid2>
           </Grid2>
         ))}
+
+      {/* Pagination */}
+      {!isLoading && filteredStudents.length > 0 && (
+        <Stack spacing={2} alignItems="center" mt={3}>
+          <Pagination
+            count={totalPages}
+            page={page}
+            onChange={handlePageChange}
+            color="primary"
+            showFirstButton
+            showLastButton
+          />
+        </Stack>
+      )}
     </>
   );
 }

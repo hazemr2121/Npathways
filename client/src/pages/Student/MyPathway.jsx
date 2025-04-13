@@ -18,7 +18,7 @@ import { useNavigate } from "react-router";
 
 export default function MyPathway() {
   const { isEnrolled } = useContext(AuthContext);
-  const [tap, setTap] = useState("profile");
+  const [tap, setTap] = useState("courses");
   const navigate = useNavigate();
   return (
     <>
