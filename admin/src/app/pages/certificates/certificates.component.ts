@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgModel } from '@angular/forms';
 import { CoursesService, Course } from '../../services/course.service';
 import { CertificatesService, Certificate as CertificateType } from '../../services/certificates.service';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
@@ -21,6 +21,17 @@ export interface Certificate {
   course: string; // This is the course ID
   createdAt: string;
   __v: number;
+}
+
+// Custom validator function for minimum word count
+function hasMinimumWords(minWords: number) {
+  return (control: NgModel) => {
+    if (!control.value) {
+      return null;
+    }
+    const wordCount = control.value.trim().split(/\s+/).length;
+    return wordCount >= minWords ? null : { minWords: true };
+  };
 }
 
 @Component({
@@ -45,6 +56,10 @@ export class CertificateComponent implements OnInit {
   certificateName: string = '';
   certificateDescription: string = '';
 
+  // Validation states
+  isDescriptionValid: boolean = true;
+  isEditDescriptionValid: boolean = true;
+
   // --- Certificate List Properties ---
   certificates: CertificateType[] = []; // To store existing certificates
 
@@ -64,6 +79,9 @@ export class CertificateComponent implements OnInit {
   editingCertificate: CertificateType | null = null;
   editName: string = '';
   editDescription: string = '';
+
+  // Add validator functions
+  validateDescription = hasMinimumWords(5);
 
   constructor(
     private courseService: CoursesService,
@@ -147,13 +165,64 @@ export class CertificateComponent implements OnInit {
     }
   }
 
+  // Validation methods
+  validateDescriptionOnBlur(): void {
+    if (!this.certificateDescription) {
+      this.isDescriptionValid = true; // Don't show error if empty (required will handle that)
+      return;
+    }
+
+    const wordCount = this.certificateDescription.trim().split(/\s+/).length;
+    this.isDescriptionValid = wordCount >= 5;
+
+    // if (!this.isDescriptionValid) {
+    //   this.snackBar.open('Description must contain at least 5 words', 'Close', {
+    //     duration: 3000,
+    //     panelClass: ['error-snackbar'],
+    //     verticalPosition: 'top',
+    //     horizontalPosition: 'right'
+    //   });
+    // }
+  }
+
+  validateEditDescriptionOnBlur(): void {
+    if (!this.editDescription) {
+      this.isEditDescriptionValid = true; // Don't show error if empty (required will handle that)
+      return;
+    }
+
+    const wordCount = this.editDescription.trim().split(/\s+/).length;
+    this.isEditDescriptionValid = wordCount >= 5;
+
+    if (!this.isEditDescriptionValid) {
+      this.snackBar.open('Description must contain at least 5 words', 'Close', {
+        duration: 3000,
+        panelClass: ['error-snackbar'],
+        verticalPosition: 'top',
+        horizontalPosition: 'right'
+      });
+    }
+  }
+
   // --- Certificate Creation ---
   createCertificate(): void {
     if (!this.selectedCourseId || !this.certificateName || !this.certificateDescription) {
       console.error('Name, Description, and Course must be provided');
-      // Add user feedback
       return;
     }
+
+    // Validate description word count
+    const wordCount = this.certificateDescription.trim().split(/\s+/).length;
+    if (wordCount < 5) {
+      this.snackBar.open('Description must contain at least 5 words', 'Close', {
+        duration: 3000,
+        panelClass: ['error-snackbar'],
+        verticalPosition: 'top',
+        horizontalPosition: 'right'
+      });
+      return;
+    }
+
     this.isCreating = true;
     const certificateData = {
       name: this.certificateName,
@@ -212,6 +281,18 @@ export class CertificateComponent implements OnInit {
   updateCertificate(): void {
     if (!this.editingCertificate || !this.editName || !this.editDescription) {
       this.snackBar.open('Certificate, Name, and Description must be provided for update', 'Close', {
+        duration: 3000,
+        panelClass: ['error-snackbar'],
+        verticalPosition: 'top',
+        horizontalPosition: 'right'
+      });
+      return;
+    }
+
+    // Validate description word count
+    const wordCount = this.editDescription.trim().split(/\s+/).length;
+    if (wordCount < 5) {
+      this.snackBar.open('Description must contain at least 5 words', 'Close', {
         duration: 3000,
         panelClass: ['error-snackbar'],
         verticalPosition: 'top',
