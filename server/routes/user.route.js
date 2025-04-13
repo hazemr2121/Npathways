@@ -21,7 +21,7 @@ router.patch(
   userController.resetPassword
 );
 
-router.get("/resendVerifyEmail/", userController.resendVerifyEmail);
+router.post("/resendVerifyEmail/", userController.resendVerifyEmail);
 
 router.get("/all", authentication, userController.getAllUsers);
 router.get("/search", authentication, userController.searchUser);

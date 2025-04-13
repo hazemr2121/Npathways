@@ -124,11 +124,11 @@ const userController = {
       // console.log(reseUrl);
 
       sendEmail({
-        email: newUser.email,
+        email: user.email,
         subject: "Verify Your Email Address",
         templateName: "verify-email",
         templateData: {
-          name: `${newUser.firstName} ${newUser.lastName}`,
+          name: `${user.firstName} ${user.lastName}`,
           verificationUrl: reseUrl,
           year: new Date().getFullYear(),
         },
@@ -186,7 +186,7 @@ const userController = {
           courses: user.courses,
         });
       } else {
-        return res.send({
+        return res.status(400).send({
           message: "Please Verify Your Email First",
         });
       }

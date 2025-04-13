@@ -32,6 +32,8 @@ import Footer from "./Components/Footer";
 import HowItWorks from "./pages/HowItWorks";
 import { QueryClientProvider } from "@tanstack/react-query";
 import queryClient from "./queryClient.js";
+import ForgetPassword from "./Components/Common/ForgetPassword.jsx";
+import Verify from "./Components/Common/Verify.jsx";
 
 const Layout = ({ children }) => {
   return (
@@ -67,6 +69,12 @@ function App() {
                   path="/terms-and-conditions"
                   element={<TermsAndConditions />}
                 />
+                <Route
+                  path="/forgetPassword/:role/:token"
+                  element={<ForgetPassword />}
+                />
+
+                <Route path="/verifyEmail/:token" element={<Verify />} />
 
                 {/* Common authenticated routes (both roles can access) */}
                 <Route element={<ProtectedRoute />}>
