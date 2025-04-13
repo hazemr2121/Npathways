@@ -28,6 +28,7 @@ import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import EmailIcon from "@mui/icons-material/Email";
 import LockIcon from "@mui/icons-material/Lock";
 import LoginIcon from "@mui/icons-material/Login";
+import axios from "axios";
 
 const validationSchema = Yup.object().shape({
   email: Yup.string()
@@ -50,6 +51,9 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [apiError, setApiError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [forgotPasswordStatus, setForgotPasswordStatus] = useState(null);
+  const [isForgotPasswordLoading, setIsForgotPasswordLoading] = useState(false);
+  const [verify, setVerify] = useState(true);
   const navigate = useNavigate();
   const { login, isEnrolled, isLoading } = useContext(AuthContext);
   const theme = useTheme();
@@ -68,16 +72,21 @@ const Login = () => {
   async function sendDataToAPI(values) {
     setIsSubmitting(true);
     setApiError(null);
+    setVerify(false);
 
     try {
-      const { success, error } = await login(values);
+      const { error } = await login(values);
       if (error)
         setApiError(
           error || "Login failed. Please check your credentials and try again."
         );
     } catch (err) {
       console.error("Login error:", err);
-      setApiError("An unexpected error occurred. Please try again later.");
+      setApiError(err);
+      if (err == "Verify your email first") {
+        setVerify(true);
+        return;
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -88,6 +97,41 @@ const Login = () => {
     validationSchema,
     onSubmit: sendDataToAPI,
   });
+  function forgetPassword() {
+    if (!formik.values.email) {
+      setForgotPasswordStatus({
+        type: "error",
+        message: "Please enter your email address first",
+      });
+      return;
+    }
+
+    setIsForgotPasswordLoading(true);
+    setForgotPasswordStatus(null);
+
+    axios
+      .post("http://localhost:5024/api/user/forgetPassword", {
+        email: formik.values.email,
+      })
+      .then((response) => {
+        setForgotPasswordStatus({
+          type: "success",
+          message: "Password reset instructions sent to your email",
+        });
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        setForgotPasswordStatus({
+          type: "error",
+          message:
+            error.response?.data?.message ||
+            "Failed to send reset email. Please try again.",
+        });
+      })
+      .finally(() => {
+        setIsForgotPasswordLoading(false);
+      });
+  }
 
   return (
     <Container
@@ -259,8 +303,24 @@ const Login = () => {
                 }}
               >
                 {apiError}
+                {verify && <Button sx={{ ml: 4 }}>Resend Verify Email</Button>}
               </Alert>
             )}
+            {/* {verify && (
+              <Alert
+                severity="error"
+                sx={{
+                  mb: 3,
+                  borderRadius: 2,
+                  "& .MuiAlert-icon": {
+                    alignItems: "center",
+                  },
+                }}
+              >
+                {apiError}
+                <Button>Resend Verify Email</Button>
+              </Alert>
+            )} */}
 
             <Box component="form" onSubmit={formik.handleSubmit}>
               <Grid container spacing={3}>
@@ -356,10 +416,9 @@ const Login = () => {
                   />
                 </Grid>
 
-                {/* <Grid item xs={12} sx={{ textAlign: "right" }}>
+                <Grid item xs={12} sx={{ textAlign: "right" }}>
                   <MuiLink
-                    component={Link}
-                    to="/forgot-password"
+                    onClick={forgetPassword}
                     underline="hover"
                     sx={{
                       color: "primary.main",
@@ -372,9 +431,27 @@ const Login = () => {
                       },
                     }}
                   >
-                    Forgot your password?
+                    {isForgotPasswordLoading
+                      ? "Sending..."
+                      : "Forgot your password?"}
                   </MuiLink>
-                </Grid> */}
+                </Grid>
+
+                {forgotPasswordStatus && (
+                  <Grid item xs={12}>
+                    <Alert
+                      severity={forgotPasswordStatus.type}
+                      sx={{
+                        borderRadius: 2,
+                        "& .MuiAlert-icon": {
+                          alignItems: "center",
+                        },
+                      }}
+                    >
+                      {forgotPasswordStatus.message}
+                    </Alert>
+                  </Grid>
+                )}
 
                 <Grid item xs={12}>
                   <Button
