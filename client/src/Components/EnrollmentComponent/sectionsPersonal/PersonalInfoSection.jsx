@@ -127,10 +127,7 @@ export default function PersonalInfoSection({
               label="First Name *"
               name="firstName"
               value={formData.firstName}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              error={Boolean(errors.firstName)}
-              helperText={errors.firstName}
+              disabled
               sx={styles.input}
             />
           </Grid>
@@ -140,10 +137,7 @@ export default function PersonalInfoSection({
               label="Last Name *"
               name="lastName"
               value={formData.lastName}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              error={Boolean(errors.lastName)}
-              helperText={errors.lastName}
+              disabled
               sx={styles.input}
             />
           </Grid>
