@@ -140,7 +140,8 @@ const PaymentController = {
     try {
       const payments = await Payment.find()
         .populate("user", "firstName lastName email")
-        .populate("course", "name description price image");
+        .populate("course", "name description price image")
+        .sort({ createdAt: -1 }); // Sort by createdAt in descending order (newest first)
 
       res.status(200).json(payments);
     } catch (err) {
