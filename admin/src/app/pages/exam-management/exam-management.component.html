@@ -13,7 +13,7 @@
     <!-- Create New Exam Section -->
     <div class="exam-form-section card">
       <div class="card-header">
-        <h2 class="section-title">
+        <h2 class="section-title my-auto">
           <i class="fas" [class.fa-edit]="isEditing" [class.fa-plus-circle]="!isEditing"></i>
           {{ isEditing ? 'Edit Exam' : 'Create New Exam' }}
         </h2>
@@ -95,13 +95,19 @@
     <div class="exams-list-section card">
       <div class="card-header">
         <div class="d-flex justify-content-between align-items-center">
-          <h2 class="section-title">
+          <h2 class="section-title my-auto">
             <i class="fas fa-list me-2"></i>
             Exams List
           </h2>
           <div class="header-actions">
             <div class="search-box d-flex align-items-center">
-              <input type="text" placeholder="Search exams..." class="form-control">
+              <input
+                type="text"
+                placeholder="Search exams..."
+                class="form-control"
+                (input)="onSearch($event)"
+                [value]="searchTerm"
+              >
             </div>
           </div>
         </div>
@@ -130,7 +136,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let exam of exams">
+              <tr *ngFor="let exam of filteredExams">
                 <td>
                   <div class="exam-name">
                     <span class="name">{{ exam.name }}</span>
