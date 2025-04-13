@@ -36,12 +36,12 @@ const userController = {
       console.log(resetToken);
       // await data.save({ validateeforeSave: false });
       const reseUrl = `${req.protocol}://${req.headers.host}/api/auth/VerifyEmail/${resetToken}`;
-      const message = `We have received a password reset request. please use the below link to reset password : 
-      \n\n ${reseUrl} \n\n This reset Password Link will be valid only for 15 minutes `;
+      const message = `We have received a Verify Email request. please use the below link to Verify Account : 
+      \n\n ${reseUrl} \n\n This verify Link will be valid only for 15 minutes `;
       console.log(reseUrl);
       sendEmail({
           email:data.email,
-          subject: "Password change request receivesd",
+          subject: "Verify Email",
           message: message,
       })
    
