@@ -47,7 +47,7 @@ export class ExamManagementComponent implements OnInit {
   ) {
     this.examForm = this.fb.group({
       name: ['', Validators.required],
-      timeLimit: ['', [Validators.required, Validators.min(1)]],
+      timeLimit: ['', [Validators.required, Validators.min(1), Validators.pattern('^[0-9]*$')]], // Ensures positive integers
       questions: this.fb.array([])
     });
   }
