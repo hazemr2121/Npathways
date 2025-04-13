@@ -8,6 +8,7 @@ import {
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { CommonModule } from '@angular/common';
+import  {CustomValidators} from '../../validators/CustomValidator'
 
 @Component({
   selector: 'app-admin-login',
@@ -36,16 +37,15 @@ export class AdminLoginComponent implements OnInit {
         [
           Validators.email,
           Validators.required,
-          Validators.pattern(/^[^\s@]+@[^\s@]+\.[^\s@]+$/),
+          CustomValidators.emailValidator()
         ],
       ],
       password: [
-        '1234@asdASD',
+        '',
         [
           Validators.required,
-          Validators.pattern(
-            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/
-          ),
+          Validators.minLength(8),
+          CustomValidators.passwordStrengthValidator(), // Using the custom validator for password strength
         ],
       ],
     });
@@ -119,3 +119,5 @@ export class AdminLoginComponent implements OnInit {
     });
   }
 }
+
+

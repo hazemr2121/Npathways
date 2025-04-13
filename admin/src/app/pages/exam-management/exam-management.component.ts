@@ -11,6 +11,9 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCardModule } from '@angular/material/card';
 import { Router } from '@angular/router';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-exam-management',
@@ -33,11 +36,14 @@ import { Router } from '@angular/router';
 })
 export class ExamManagementComponent implements OnInit {
   exams: Exam[] = [];
+  filteredExams: Exam[] = [];
   displayedColumns: string[] = ['name', 'timeLimit', 'questions', 'actions'];
   examForm: FormGroup;
   isEditing = false;
   currentExamId: string | null = null;
   isUploading: boolean = false;
+  searchTerm: string = '';
+  private searchSubject = new Subject<string>();
 
   constructor(
     private examService: ExamService,
@@ -50,6 +56,14 @@ export class ExamManagementComponent implements OnInit {
       timeLimit: ['', [Validators.required, Validators.min(1), Validators.pattern('^[0-9]*$')]], // Ensures positive integers
       questions: this.fb.array([])
     });
+
+    // Setup search with debounce
+    this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged()
+    ).subscribe(term => {
+      this.filterExams(term);
+    });
   }
 
   ngOnInit(): void {
@@ -60,11 +74,29 @@ export class ExamManagementComponent implements OnInit {
     this.examService.getExams().subscribe({
       next: (data) => {
         this.exams = data;
+        this.filteredExams = data;
       },
       error: (error) => {
         console.error('Error loading exams:', error);
       }
     });
+  }
+
+  onSearch(event: Event): void {
+    const searchValue = (event.target as HTMLInputElement).value;
+    this.searchSubject.next(searchValue);
+  }
+
+  filterExams(term: string): void {
+    if (!term) {
+      this.filteredExams = this.exams;
+      return;
+    }
+
+    const searchTermLower = term.toLowerCase();
+    this.filteredExams = this.exams.filter(exam =>
+      exam.name.toLowerCase().includes(searchTermLower)
+    );
   }
 
   createExam(): void {
@@ -108,16 +140,23 @@ export class ExamManagementComponent implements OnInit {
   }
 
   deleteExam(id: string): void {
-    if (confirm('Are you sure you want to delete this exam?')) {
-      this.examService.deleteExam(id).subscribe({
-        next: () => {
-          this.loadExams();
-        },
-        error: (error) => {
-          console.error('Error deleting exam:', error);
-        }
-      });
-    }
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: { title: 'Confirm Delete', message: 'Are you sure you want to delete this exam?' }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.examService.deleteExam(id).subscribe({
+          next: () => {
+            this.loadExams();
+          },
+          error: (error) => {
+            console.error('Error deleting exam:', error);
+          }
+        });
+      }
+    });
   }
 
   resetForm(): void {
