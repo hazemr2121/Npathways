@@ -35,14 +35,21 @@ const userController = {
       const resetToken = jwt.sign({ id: newUser._id }, process.env.VERIFY_KEY);
       console.log(resetToken);
       // await data.save({ validateeforeSave: false });
-      const reseUrl = `${req.protocol}://${req.headers.host}/api/auth/VerifyEmail/${resetToken}`;
+      const reseUrl = `http://localhost:5173/verifyEmail/${resetToken}`;
       const message = `We have received a Verify Email request. please use the below link to Verify Account : 
       \n\n ${reseUrl} \n\n This verify Link will be valid only for 15 minutes `;
+
       console.log(reseUrl);
+
       sendEmail({
-        email: data.email,
-        subject: "Verify Email",
-        message: message,
+        email: newUser.email,
+        subject: "Verify Your Email Address",
+        templateName: "verify-email",
+        templateData: {
+          name: `${newUser.firstName} ${newUser.lastName}`,
+          verificationUrl: reseUrl,
+          year: new Date().getFullYear(),
+        },
       });
 
       return res.status(201).send({
@@ -51,7 +58,7 @@ const userController = {
     } catch (error) {
       console.error("New User Error:", error);
       return res.status(500).send({
-        message: error.message,
+        message: "Error:" + error.message,
       });
     }
   },
@@ -67,6 +74,17 @@ const userController = {
           { verify: true },
           { new: true }
         );
+
+        if (!updateUser) {
+          return res.status(404).send({
+            message: "User not found",
+          });
+        }
+
+        updateUser = updateUser.toObject();
+        delete updateUser.password;
+        delete updateUser.tokens;
+
         res.json({ message: updateUser });
       });
     } catch (error) {
@@ -286,7 +304,7 @@ const userController = {
       // console.log(resetToken);
       await user.save({ validateeforeSave: false });
 
-      const reseUrl = `${req.protocol}://${req.headers.host}/api/auth/resetPassword/${resetToken}`;
+      const reseUrl = `http://localhost:5173/forgetpassword/user/${resetToken}`;
       const message = `We have received a password reset request. please use the below link to reset password : 
       \n\n ${reseUrl} \n\n This reset Password Link will be valid only for 15 minutes `;
       // console.log(reseUrl);
@@ -294,9 +312,15 @@ const userController = {
       try {
         await sendEmail({
           email: user.email,
-          subject: "Password change request receivesd",
-          message: message,
+          subject: "Reset Your Password",
+          templateName: "reset-password",
+          templateData: {
+            name: `${user.firstName} ${user.lastName}`,
+            resetUrl: reseUrl,
+            year: new Date().getFullYear(),
+          },
         });
+
         res.status(200).send({
           message: "password reset link send to the admine email",
         });

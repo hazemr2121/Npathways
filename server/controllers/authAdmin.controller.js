@@ -20,10 +20,7 @@ const authAdminController = {
     try {
       let data = { ...req.body, email: req.body.email.toLowerCase() };
 
-      const isDuplicate = await isDuplicatedEmail(
-        data.email,
-        null
-      );
+      const isDuplicate = await isDuplicatedEmail(data.email, null);
 
       if (isDuplicate) {
         return res.status(403).send({
@@ -216,7 +213,7 @@ const authAdminController = {
       // console.log(resetToken);
       await user.save({ validateeforeSave: false });
 
-      const reseUrl = `${req.protocol}://${req.headers.host}/api/admin/resetPassword/${resetToken}`;
+      const reseUrl = `http://localhost:5173/forgetpassword/admin/${resetToken}`;
       const message = `We have received a password reset request. please use the below link to reset password : 
     \n\n ${reseUrl} \n\n This reset Password Link will be valid only for 15 minutes `;
       // console.log(reseUrl);
@@ -224,9 +221,15 @@ const authAdminController = {
       try {
         await sendEmail({
           email: user.email,
-          subject: "Password change request receivesd",
-          message: message,
+          subject: "Reset Your Password",
+          templateName: "reset-password",
+          templateData: {
+            name: `${user.firstName} ${user.lastName}`,
+            resetUrl: reseUrl,
+            year: new Date().getFullYear(),
+          },
         });
+
         res.status(200).send({
           message: "password reset link send to the admine email",
         });

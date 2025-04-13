@@ -259,7 +259,7 @@ const instructorContoller = {
       // console.log(resetToken);
       await instructor.save({ validateeforeSave: false });
 
-      const reseUrl = `${req.protocol}://${req.headers.host}/api/instructor/resetPassword/${resetToken}`;
+      const reseUrl = `http://localhost:5173/forgetpassword/instructor/${resetToken}`;
       const message = `We have received a password reset request. please use the below link to reset password : 
       \n\n ${reseUrl} \n\n This reset Password Link will be valid only for 15 minutes `;
       // console.log(reseUrl);
@@ -267,9 +267,15 @@ const instructorContoller = {
       try {
         await sendEmail({
           email: instructor.email,
-          subject: "Password change request receivesd",
-          message: message,
+          subject: "Reset Your Password",
+          templateName: "reset-password",
+          templateData: {
+            name: `${instructor.firstName} ${instructor.lastName}`,
+            resetUrl: reseUrl,
+            year: new Date().getFullYear(),
+          },
         });
+
         res.status(200).send({
           message: "password reset link send to the Instructor email",
         });
