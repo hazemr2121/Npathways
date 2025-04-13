@@ -71,15 +71,23 @@
           class="invalid-feedback"
           *ngIf="password?.invalid && password?.touched"
         >
-          <div *ngIf="password?.errors">
-            <div *ngIf="password?.errors?.['required']">
-              Password is required
-            </div>
-            <div *ngIf="password?.errors?.['pattern']">
-              Password must contain at least 8 characters, including an
-              uppercase letter, a lowercase letter, a number, and a special
-              character.
-            </div>
+          <div *ngIf="password?.errors as errors">
+            <span *ngIf="errors['required']">Password is required</span>
+            <span *ngIf="errors['minLength']">
+              Password must be at least 8 characters
+            </span>
+            <span *ngIf="errors['uppercase']">
+              Password must contain at least one uppercase letter
+            </span>
+            <span *ngIf="errors['lowercase']">
+              Password must contain at least one lowercase letter
+            </span>
+            <span *ngIf="errors['number']">
+              Password must contain at least one number
+            </span>
+            <span *ngIf="errors['specialChar']">
+              Password must contain at least one special character
+            </span>
           </div>
         </div>
       </div>
