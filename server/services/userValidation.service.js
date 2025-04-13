@@ -173,15 +173,15 @@ export const updatePasswordUserSchema = Joi.object({
     }),
 });
 export let resetPaswwordUserSchema = Joi.object({
-  email: Joi.string()
-    .email({ minDomainSegments: 2 })
-    .trim()
-    .required()
-    .messages({
-      "string.email": "Please enter a valid email address.",
-      "string.empty": "Email is required and cannot be empty.",
-      "any.required": "Email is a required field.",
-    }),
+  // email: Joi.string()
+  //   .email({ minDomainSegments: 2 })
+  //   .trim()
+  //   .required()
+  //   .messages({
+  //     "string.email": "Please enter a valid email address.",
+  //     "string.empty": "Email is required and cannot be empty.",
+  //     "any.required": "Email is a required field.",
+  //   }),
   password: Joi.string()
     .pattern(
       new RegExp(

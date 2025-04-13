@@ -315,10 +315,13 @@ const userController = {
   resetPassword: async (req, res) => {
     try {
       const { password } = req.body;
-      const email = req.body.email.toLowerCase();
 
-      if (!email || !password) {
-        return res.status(400).send({ message: "All fields are required!" });
+      if (!password) {
+        return res.status(400).send({ message: "Password is required!" });
+      }
+
+      if (!req.params || !req.params.token) {
+        return res.status(400).send({ message: "Token is required!" });
       }
 
       const token = crypto
@@ -326,13 +329,12 @@ const userController = {
         .update(req.params.token)
         .digest("hex");
       const user = await User.findOne({
-        email,
         passwordResetToken: token,
         passwordResetExpires: { $gt: Date.now() },
       });
 
       if (!user) {
-        return res.status(400).send({ message: "User Not Found" });
+        return res.status(400).send({ message: "Invalid or expired token" });
       }
 
       user.password = password;
@@ -340,11 +342,21 @@ const userController = {
       user.passwordResetExpires = undefined;
       user.changePasswordAt = Date.now();
 
-      await user.save();
-
       const loginToken = jwt.sign({ id: user._id }, process.env.SECRET_KEY, {
         expiresIn: process.env.JWT_EXPIRES_IN || "7d",
       });
+
+      res.cookie("access_token", `Bearer ${loginToken}`, {
+        httpOnly: true,
+        maxAge: 60 * 60 * 24 * 2 * 1000,
+      });
+
+      user.tokens.push(token);
+      if (user.tokens.length > 2) {
+        user.tokens = user.tokens.slice(-2);
+      }
+
+      await user.save();
 
       return res.status(200).send({
         message: "Password reset successfully. You are now logged in!",
