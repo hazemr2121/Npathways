@@ -293,25 +293,22 @@ const instructorContoller = {
   },
   resetPassword: async (req, res) => {
     try {
-      const { password, confirmPassword } = req.body;
-      const email = req.body.email.toLowerCase();
+      const { password } = req.body;
 
-      if (!email || !password || !confirmPassword) {
+      if (!password) {
         return res.status(400).send({ message: "All fields are required!" });
       }
-      if (password !== confirmPassword) {
-        return res.status(400).json({ message: "Passwords do not match!" });
-      }
+
       const token = crypto
         .createHash("sha256")
         .update(req.params.token)
         .digest("hex");
 
       const instructor = await Instructor.findOne({
-        email,
         passwordResetToken: token,
         passwordResetExpires: { $gt: Date.now() },
       });
+
       if (!instructor) {
         return res.status(400).send({ message: "Instructor Not Found" });
       }
@@ -331,6 +328,11 @@ const instructorContoller = {
           expiresIn: process.env.JWT_EXPIRES_IN || "7d",
         }
       );
+
+      res.cookie("access_token", `Bearer ${loginToken}`, {
+        httpOnly: true,
+        maxAge: 60 * 60 * 24 * 2 * 1000,
+      });
 
       return res.status(200).send({
         message: "Password reset successfully. You are now logged in!",

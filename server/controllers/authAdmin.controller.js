@@ -247,21 +247,17 @@ const authAdminController = {
   },
   resetPassword: async (req, res) => {
     try {
-      const { password, confirmPassword } = req.body;
-      const email = req.body.email.toLowerCase();
+      const { password } = req.body;
 
-      if (!email || !password || !confirmPassword) {
+      if (!password) {
         return res.status(400).send({ message: "All fields are required!" });
-      }
-
-      if (password !== confirmPassword) {
-        return res.status(400).json({ message: "Passwords do not match!" });
       }
 
       const token = crypto
         .createHash("sha256")
         .update(req.params.token)
         .digest("hex");
+
       const admin = await Admin.findOne({
         email,
         passwordResetToken: token,
@@ -282,6 +278,11 @@ const authAdminController = {
 
       const loginToken = jwt.sign({ id: admin._id }, process.env.SECRET_KEY, {
         expiresIn: process.env.JWT_EXPIRES_IN || "7d",
+      });
+
+      res.cookie("access_token", `Bearer ${loginToken}`, {
+        httpOnly: true,
+        maxAge: 60 * 60 * 24 * 2 * 1000,
       });
 
       return res.status(200).send({
