@@ -153,6 +153,7 @@
         </button>
       </div>
 
+
       <!-- Course Grid -->
       <div class="row g-4" *ngIf="!isLoading && filteredCourses.length > 0">
         <div class="col-md-4" *ngFor="let course of paginatedCourses">
@@ -164,15 +165,6 @@
                 alt="Course Image"
                 (error)="handleImageError($event)"
               />
-<!--               <span
-                class="position-absolute top-0 end-0 m-2 badge"
-                [ngClass]="{
-                  'bg-success': course.status === 'published',
-                  'bg-warning': course.status === 'unpublished'
-                }"
-              >
-                {{ course.status || "Draft" | titlecase }}
-              </span> -->
             </div>
 
             <div class="card-body">
@@ -194,7 +186,10 @@
               <!-- Instructor Info -->
               <div class="mb-3">
                 <div class="d-flex flex-wrap gap-2">
-                  <div *ngFor="let instructor of course.instructorDetails" class="d-flex align-items-center">
+                  <div
+                    *ngFor="let instructor of course.instructorDetails"
+                    class="d-flex align-items-center"
+                  >
                     <img
                       [src]="instructor?.image || 'assets/images/avuser.jpg'"
                       class="rounded-circle me-1"
@@ -203,12 +198,29 @@
                       alt="Instructor"
                       (error)="handleAvatarError($event)"
                     />
-                    <span class="small">{{ instructor?.firstName }} {{ instructor?.lastName }}</span>
+                    <span class="small"
+                      >{{ instructor?.firstName }}
+                      {{ instructor?.lastName }}</span
+                    >
                   </div>
-                  <div *ngIf="!course.instructorDetails?.length" class="small text-muted">
+                  <div
+                    *ngIf="!course.instructorDetails?.length"
+                    class="small text-muted"
+                  >
                     No instructors assigned
                   </div>
                 </div>
+              </div>
+
+              <!-- Course Lessons -->
+              <div *ngIf="course.lessons?.length" class="mb-3">
+                <h6 class="fw-semibold">Lessons</h6>
+                <ul class="list-unstyled">
+                  <li *ngFor="let lesson of course.lessons">
+                    <i class="bi bi-file-earmark-text me-2"></i>
+                    {{ lesson.name }}
+                  </li>
+                </ul>
               </div>
 
               <!-- Course Stats -->
@@ -276,36 +288,47 @@
           </div>
         </div>
       </div>
-
     </div>
   </div>
-       <!-- Pagination -->
-<div class="pagination-container mt-4">
-  <nav *ngIf="totalPages > 1" aria-label="Page navigation">
-    <ul class="pagination justify-content-center">
-      <li class="page-item" [class.disabled]="currentPage === 1">
-        <button type="button" class="page-link" (click)="goToPage(currentPage - 1); $event.preventDefault()">
-          Previous
-        </button>
-      </li>
-      <li
-        class="page-item"
-        *ngFor="let page of [].constructor(totalPages); let i = index"
-        [class.active]="currentPage === i + 1"
-      >
-        <button type="button" class="page-link" (click)="goToPage(i + 1); $event.preventDefault()">
-          {{ i + 1 }}
-        </button>
-      </li>
+  <!-- Pagination -->
+  <div class="pagination-container mt-4">
+    <nav *ngIf="totalPages > 1" aria-label="Page navigation">
+      <ul class="pagination justify-content-center">
+        <li class="page-item" [class.disabled]="currentPage === 1">
+          <button
+            type="button"
+            class="page-link"
+            (click)="goToPage(currentPage - 1); $event.preventDefault()"
+          >
+            Previous
+          </button>
+        </li>
+        <li
+          class="page-item"
+          *ngFor="let page of [].constructor(totalPages); let i = index"
+          [class.active]="currentPage === i + 1"
+        >
+          <button
+            type="button"
+            class="page-link"
+            (click)="goToPage(i + 1); $event.preventDefault()"
+          >
+            {{ i + 1 }}
+          </button>
+        </li>
 
-      <li class="page-item" [class.disabled]="currentPage === totalPages">
-        <button type="button" class="page-link" (click)="goToPage(currentPage + 1); $event.preventDefault()">
-          Next
-        </button>
-      </li>
-    </ul>
-  </nav>
-</div>
+        <li class="page-item" [class.disabled]="currentPage === totalPages">
+          <button
+            type="button"
+            class="page-link"
+            (click)="goToPage(currentPage + 1); $event.preventDefault()"
+          >
+            Next
+          </button>
+        </li>
+      </ul>
+    </nav>
+  </div>
 </div>
 
 <!-- Dialogs -->

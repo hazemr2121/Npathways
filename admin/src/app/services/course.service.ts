@@ -6,6 +6,8 @@ import { Instructor } from './instructor.service';
 interface Lesson {
   name: string;
   duration?: number;
+  description?: string;
+  downloadLink?: string;
   _id?: string;
 }
 
