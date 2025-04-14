@@ -45,6 +45,7 @@ export class ExamDetailsComponent implements OnInit {
   difficulties = ['easy', 'medium', 'hard'];
   readonly MIN_ANSWERS = 2;
   readonly MAX_ANSWERS = 4;
+  questionValidationErrors: { [key: number]: boolean } = {};
 
   constructor(
     private route: ActivatedRoute,
@@ -148,6 +149,8 @@ export class ExamDetailsComponent implements OnInit {
 
     if (!this.isEditing) {
       this.disableFormControls();
+    } else {
+      this.enableFormControls();
     }
   }
 
@@ -183,6 +186,17 @@ export class ExamDetailsComponent implements OnInit {
     }
   }
 
+  checkQuestionValidation(questionIndex: number): void {
+    if (!this.isEditing) return;
+
+    const answers = this.getAnswers(questionIndex);
+    const correctAnswers = answers.controls.filter(
+      (answer) => answer.get('isCorrect')?.value
+    );
+
+    this.questionValidationErrors[questionIndex] = correctAnswers.length !== 1;
+  }
+
   setCorrectAnswer(questionIndex: number, answerIndex: number): void {
     const answers = this.getAnswers(questionIndex);
     answers.controls.forEach((answer, idx) => {
@@ -192,6 +206,9 @@ export class ExamDetailsComponent implements OnInit {
         answer.get('isCorrect')?.setValue(false);
       }
     });
+
+    // Clear validation error when a correct answer is selected
+    this.questionValidationErrors[questionIndex] = false;
   }
 
   toggleEdit(): void {
@@ -199,9 +216,10 @@ export class ExamDetailsComponent implements OnInit {
 
     if (!this.isEditing) {
       this.patchFormWithExamData(this.exam!);
-      this.disableFormControls();
     } else {
       this.enableFormControls();
+      // Mark form as touched to trigger validation
+      this.examForm.markAllAsTouched();
     }
   }
 
@@ -260,10 +278,9 @@ export class ExamDetailsComponent implements OnInit {
         break;
       }
 
-      const correctAnswers = answers.controls.filter(
-        (answer) => answer.get('isCorrect')?.value
-      );
-      if (correctAnswers.length !== 1) {
+      // Check if the question has exactly one correct answer
+      this.checkQuestionValidation(i);
+      if (this.questionValidationErrors[i]) {
         this.showErrorNotification(
           `Question ${i + 1} must have exactly one correct answer.`
         );
@@ -320,16 +337,14 @@ export class ExamDetailsComponent implements OnInit {
         },
         error: (error: any) => {
           console.error('Error uploading file:', error);
+
           if (error.error?.errors) {
-            // Split the error string by newlines and display each error separately with delay
-            const errorMessages = error.error.errors.split('\n');
-            errorMessages.forEach((message: string, index: number) => {
-              if (message.trim()) {  // Only show non-empty messages
-                setTimeout(() => {
-                  this.showErrorNotification(message.trim());
-                }, index * 2000); // 2 seconds delay between each notification
-              }
-            });
+            // Format the error message with proper line breaks
+            let formattedMessage = error.error.errors.split('\n').splice(0, 5).join('\n');
+            if (error.error.errors.split('\n').length > 5) {
+              formattedMessage += '\n...';
+            }
+            this.showErrorNotification(formattedMessage);
           } else {
             this.showErrorNotification(
               error.error?.message || 'Error uploading questions sheet. Please try again.'
@@ -341,11 +356,16 @@ export class ExamDetailsComponent implements OnInit {
   }
 
   private showErrorNotification(message: string): void {
-    this.snackBar.open(message, 'Close', {
-      duration: 5000,
-      panelClass: ['error-snackbar'],
+    const snackBarRef = this.snackBar.open(message, 'Close', {
+      duration: 0,
+      panelClass: ['error-snackbar', 'multiline-snackbar'],
       verticalPosition: 'top',
       horizontalPosition: 'right',
+      politeness: 'assertive'
+    });
+
+    snackBarRef.onAction().subscribe(() => {
+      snackBarRef.dismiss();
     });
   }
 

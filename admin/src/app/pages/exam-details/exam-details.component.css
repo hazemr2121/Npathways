@@ -151,6 +151,7 @@ label {
 ::ng-deep .error-snackbar {
   background: #f44336;
   color: white;
+  white-space: pre-line !important;
 }
 
 ::ng-deep .success-snackbar {
@@ -160,4 +161,22 @@ label {
 
 ::ng-deep .mat-simple-snackbar-action {
   color: white;
+}
+
+.invalid-feedback {
+  color: #dc3545;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  display: block;
+}
+
+.mt-2 {
+  margin-top: 0.5rem;
+}
+
+.answers-section .invalid-feedback {
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  background-color: rgba(220, 53, 69, 0.1);
+  border-radius: 4px;
 }

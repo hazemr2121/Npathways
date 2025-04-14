@@ -1,7 +1,7 @@
 <div class="exam-details-container">
   <div class="header-actions">
     <div class="d-flex gap-2">
-      <button class="btn btn-primary" (click)="toggleEdit()">
+      <button class="btn btn-primary text-white" (click)="toggleEdit()">
         {{ isEditing ? "Cancel Edit" : "Edit Exam" }}
       </button>
     </div>
@@ -58,7 +58,7 @@
           >
             Add Question
           </button>
-          <label class="btn btn-primary" *ngIf="isEditing">
+          <label class="btn btn-primary text-white" *ngIf="isEditing">
             <input
               type="file"
               (change)="onFileSelected($event)"
@@ -152,6 +152,7 @@
                       type="checkbox"
                       formControlName="isCorrect"
                       (change)="setCorrectAnswer(i, j)"
+                      (blur)="checkQuestionValidation(i)"
                       [disabled]="!isEditing"
                     />
                     <span class="checkmark"></span>
@@ -167,6 +168,9 @@
                   </button>
                 </div>
               </div>
+            </div>
+            <div class="invalid-feedback mt-2" *ngIf="questionValidationErrors[i] && isEditing">
+              <span>Please select exactly one correct answer for this question.</span>
             </div>
             <button
               *ngIf="isEditing && getAnswers(i).length < MAX_ANSWERS"
@@ -184,10 +188,13 @@
     <div class="form-actions" *ngIf="isEditing">
       <button
         type="submit"
-        class="btn btn-primary"
-        [disabled]="!examForm.valid"
+        class="btn btn-primary me-2 text-white"
+        [disabled]="!isEditing"
       >
         Save Changes
+      </button>
+      <button class="btn btn-primary text-white" (click)="toggleEdit()">
+        {{ isEditing ? "Cancel Edit" : "Edit Exam" }}
       </button>
     </div>
   </form>
