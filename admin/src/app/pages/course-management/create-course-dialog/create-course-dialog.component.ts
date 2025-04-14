@@ -9,11 +9,12 @@ import {
   ReactiveFormsModule,
   FormArray,
 } from '@angular/forms';
-import { CoursesService, Course } from '../../../services/course.service';
+import { CoursesService } from '../../../services/course.service';
 import {
   InstructorService,
   Instructor,
 } from '../../../services/instructor.service';
+import { ExamService, Exam } from '../../../services/exam.service';
 
 interface Lesson {
   name: string;
@@ -43,11 +44,14 @@ export class CreateCourseDialogComponent implements OnInit {
   instructors: Instructor[] = [];
   selectedInstructors: string[] = [];
   newInstructor: string = '';
+  exams: Exam[] = [];
+  selectedExamId: string | null = null;
 
   constructor(
     private fb: FormBuilder,
     private coursesService: CoursesService,
-    private instructorService: InstructorService
+    private instructorService: InstructorService,
+    private examService: ExamService
   ) {
     this.courseForm = this.fb.group({
       name: [
@@ -72,6 +76,7 @@ export class CreateCourseDialogComponent implements OnInit {
       image: [null],
       instructors: [[], Validators.required],
       lessons: this.fb.array([], Validators.required),
+      requiredExams: [[]],
     });
 
     this.addLesson();
@@ -79,6 +84,7 @@ export class CreateCourseDialogComponent implements OnInit {
 
   ngOnInit() {
     this.loadInstructors();
+    this.loadExams();
   }
 
   get name() {
@@ -115,6 +121,20 @@ export class CreateCourseDialogComponent implements OnInit {
     });
   }
 
+  //load exams
+  loadExams() {
+    this.examService.getExams().subscribe({
+      next: (exams) => {
+        this.exams = exams;
+      },
+      error: (error) => {
+        console.error('Error loading exams:', error);
+        this.error = 'Failed to load exams. Please try again.';
+      },
+    });
+  }
+
+  //load instructors
   loadInstructors() {
     this.instructorService.getAllInstructors().subscribe({
       next: (instructors) => {
@@ -244,6 +264,10 @@ export class CreateCourseDialogComponent implements OnInit {
           this.courseForm.get('discount')?.value.toString()
         );
       }
+      const selectedExams = this.courseForm.get('requiredExams')?.value;
+      if (selectedExams && selectedExams.length > 0) {
+        formData.append('requiredExams', JSON.stringify(selectedExams));
+      }
 
       formData.append('instructors', JSON.stringify(this.selectedInstructors));
       const lessons = this.lessons.value;
@@ -296,5 +320,33 @@ export class CreateCourseDialogComponent implements OnInit {
       this.lessons.removeAt(0);
     }
     this.addLesson();
+  }
+
+
+// reqire exam 
+
+  selectedExams: string[] = [];
+  newExam: string = '';
+
+  getExamName(id: string): string {
+    const exam = this.exams.find((e) => e._id === id);
+    return exam ? exam.name : 'Unknown';
+  }
+
+  addExam(): void {
+    if (this.newExam && !this.selectedExams.includes(this.newExam)) {
+      this.selectedExams.push(this.newExam);
+      this.newExam = '';
+      this.courseForm.get('requiredExams')?.setValue(this.selectedExams);
+    }
+  }
+
+  removeExam(id: string): void {
+    this.selectedExams = this.selectedExams.filter((eid) => eid !== id);
+    this.courseForm.get('requiredExams')?.setValue(this.selectedExams);
+  }
+
+  getAvailableExams(): any[] {
+    return this.exams.filter((exam) => !this.selectedExams.includes(exam._id));
   }
 }
