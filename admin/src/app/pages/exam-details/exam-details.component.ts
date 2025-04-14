@@ -320,10 +320,23 @@ export class ExamDetailsComponent implements OnInit {
         },
         error: (error: any) => {
           console.error('Error uploading file:', error);
-          this.showErrorNotification(
-            error.error?.message ||
-              'Error uploading questions sheet. Please try again.'
-          );
+          console.log(error.error);
+
+          if (error.error?.errors) {
+            // Split the error string by newlines and display each error separately with delay
+            const errorMessages = error.error.errors.split('\n');
+            errorMessages.forEach((message: string, index: number) => {
+              if (message.trim()) {  // Only show non-empty messages
+                setTimeout(() => {
+                  this.showErrorNotification(message.trim());
+                }, index * 2000); // 2 seconds delay between each notification
+              }
+            });
+          } else {
+            this.showErrorNotification(
+              error.error?.message || 'Error uploading questions sheet. Please try again.'
+            );
+          }
         },
       });
     }
