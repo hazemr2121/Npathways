@@ -19,6 +19,7 @@ import PersonalInfoSection from "./sectionsPersonal/PersonalInfoSection";
 import AddressAndContactSection from "./sectionsPersonal/ContactInfoSection";
 import FacultySection from "./sectionsPersonal/FacultySection";
 import MotivationLetterSection from "./sectionsPersonal/MotivationLetterSection";
+import PathwaySection from "./sectionsPersonal/PathwaySection";
 
 const COUNTRIES = [
   { code: "EG", label: "Egypt", phoneCode: "+20" },
@@ -115,6 +116,7 @@ const INITIAL_FORM_DATA = {
   GPA: "",
   motivationLetter: "",
   exam: [],
+  pathway: "",
 };
 
 const STEPS = ["User Info", "Exam", "Result"];
@@ -147,10 +149,10 @@ export default function PersonalDetailsForm() {
           address: { ...prev.address, ...(parsedData.address || {}) },
           exam: parsedData.exam || [],
           facultyName: parsedData.facultyName || parsedData.faculty || "",
-          phoneCountry:
-            parsedData.phoneCountry || parsedData.address?.country || "",
+          phoneCountry: parsedData.phoneCountry || parsedData.address?.country || "",
+          pathway: parsedData.pathway || "", 
         }));
-      } catch (error) {
+       } catch (error) {
         console.error("Error parsing saved data:", error);
       }
     }
@@ -158,8 +160,11 @@ export default function PersonalDetailsForm() {
 
   useEffect(() => {
     localStorage.setItem("formData", JSON.stringify(formData));
+    console.log(formData)
   }, [formData]);
+
   const validationSchema = Yup.object({
+    pathway: Yup.string().required("Pathway is required"),
     dateOfBirth: Yup.date()
       .required("Date of birth is required")
       .min(new Date(1980, 0, 1), "Date of birth must be 1980 or later")
@@ -333,6 +338,8 @@ export default function PersonalDetailsForm() {
         };
       } else if (name === "faculty") {
         newData = { ...newData, faculty: value, facultyName: value };
+      }  else if (name === "pathway") {
+        newData = { ...newData, pathway: typeof value === "object" ? value.name : value };
       } else {
         newData = { ...newData, [name]: value };
       }
@@ -422,6 +429,7 @@ export default function PersonalDetailsForm() {
           street: formData.address.street || "",
         },
         phoneCountry: getCountryName(formData.phoneCountry) || "",
+        pathway: formData.pathway || "", 
       };
 
       setErrors({});
@@ -439,6 +447,7 @@ export default function PersonalDetailsForm() {
       setOpenSnackbar(true);
     }
   }, [formData, setPersonalDetails, navigate]);
+
   const handleSnackbarClose = useCallback(() => {
     setSnackbarQueue((prev) => prev.slice(1));
     setOpenSnackbar(false);
@@ -468,6 +477,12 @@ export default function PersonalDetailsForm() {
         handleBlur={handleBlur}
       />
       <FacultySection
+        formData={formData}
+        errors={errors}
+        handleChange={handleChange}
+        handleBlur={handleBlur}
+      />
+      <PathwaySection
         formData={formData}
         errors={errors}
         handleChange={handleChange}
