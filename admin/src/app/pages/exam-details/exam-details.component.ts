@@ -320,8 +320,6 @@ export class ExamDetailsComponent implements OnInit {
         },
         error: (error: any) => {
           console.error('Error uploading file:', error);
-          console.log(error.error);
-
           if (error.error?.errors) {
             // Split the error string by newlines and display each error separately with delay
             const errorMessages = error.error.errors.split('\n');
