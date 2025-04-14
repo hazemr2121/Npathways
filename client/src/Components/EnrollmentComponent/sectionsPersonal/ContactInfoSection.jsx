@@ -1,8 +1,18 @@
- import React, { useState } from 'react';
-import { Grid, TextField, Typography, Box, IconButton } from '@mui/material';
+import React, { useState } from 'react';
+import {
+  Grid,
+  TextField,
+  Typography,
+  Box,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  IconButton,
+} from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
-const countries = [
+ const countries = [
   { code: 'EG', label: 'Egypt', phoneCode: '+20' },
   { code: 'SA', label: 'Saudi Arabia', phoneCode: '+966' },
   { code: 'AE', label: 'United Arab Emirates', phoneCode: '+971' },
@@ -84,14 +94,14 @@ const FormSection = ({
   </Box>
 );
 
-export default function ContactInfoSection({
+export default function AddressAndContactSection({
   formData,
   errors,
   handleChange,
   handleBlur,
 }) {
   const [expandedSections, setExpandedSections] = useState({
-    contactDetails: true,
+    addressAndContact: true,
   });
 
   const handleToggleSection = (section) => {
@@ -105,31 +115,70 @@ export default function ContactInfoSection({
   const phoneCode = selectedCountry ? selectedCountry.phoneCode : '';
 
   return (
-    <Box>
+    <Box sx={{ mt: 4 }}>
       <FormSection
-        title="Contact Information"
-        name="contactDetails"
-        expanded={expandedSections.contactDetails}
+        title="Address and Contact Information"
+        name="addressAndContact"
+        expanded={expandedSections.addressAndContact}
         handleToggleSection={handleToggleSection}
         required
       >
-        <Grid container spacing={2}>
-          <Grid item xs={12}>
+        <Grid container spacing={2} mt={1}>
+        <Grid item xs={12}>
             <TextField
               fullWidth
               label="Email *"
               name="email"
-              value={formData.email}
+              value={formData.email || ''}
               disabled
               sx={styles.input}
             />
           </Grid>
-          <Grid item xs={12}>
+          {/* Address Fields */}
+          <Grid item xs={12} md={6}>
+            <FormControl
+              fullWidth
+              error={Boolean(errors.address?.country)}
+              sx={styles.input}
+            >
+              <InputLabel>Country *</InputLabel>
+              <Select
+                label="Country *"
+                name="address.country"
+                value={formData.address?.country || ''}
+                onChange={(e) => {
+                  handleChange(e);
+                  handleChange({
+                    target: {
+                      name: 'phoneCountry',
+                      value: e.target.value,
+                    },
+                  });
+                }}
+                onBlur={handleBlur}
+              >
+                <MenuItem value="">
+                  <em>Select a country</em>
+                </MenuItem>
+                {countries.map((country) => (
+                  <MenuItem key={country.code} value={country.code}>
+                    {country.label}
+                  </MenuItem>
+                ))}
+              </Select>
+              {errors.address?.country && (
+                <Typography variant="caption" color="error">
+                  {errors.address.country}
+                </Typography>
+              )}
+            </FormControl>
+          </Grid>
+          <Grid item xs={12} md={6}>
             <TextField
               fullWidth
               label="Phone Number *"
               name="phone"
-              value={formData.phone}
+              value={formData.phone || ''}
               onChange={handleChange}
               onBlur={handleBlur}
               error={Boolean(errors.phone)}
@@ -140,9 +189,38 @@ export default function ContactInfoSection({
                   <Typography sx={{ mr: 1 }}>{phoneCode}</Typography>
                 ) : null,
               }}
-              disabled={!formData.address?.country} 
+              disabled={!formData.address?.country}
             />
           </Grid>
+
+          <Grid item xs={12} md={6}>
+            <TextField
+              fullWidth
+              label="City"
+              name="address.city"
+              value={formData.address?.city || ''}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              error={Boolean(errors.address?.city)}
+              helperText={errors.address?.city}
+              sx={styles.input}
+            />
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <TextField
+              fullWidth
+              label="Street"
+              name="address.street"
+              value={formData.address?.street || ''}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              error={Boolean(errors.address?.street)}
+              helperText={errors.address?.street}
+              sx={styles.input}
+            />
+          </Grid>
+          
+        
         </Grid>
       </FormSection>
     </Box>
