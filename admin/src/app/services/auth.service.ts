@@ -101,9 +101,21 @@ export class AuthService {
   isAdmin(): boolean {
     return this.getUserRole() === 'admin';
   }
+  isInstructor(): boolean {
+    return this.getUserRole() === 'instructor';
+  }
 
   getProfile(): Observable<any> {
-    const url = 'http://localhost:5024/api/admin/';
+    let url: string;
+
+    if (this.isAdmin()) {
+      url = 'http://localhost:5024/api/admin/';
+    } else if (this.isInstructor()) {
+      url = 'http://localhost:5024/api/instructor/';
+    } else {
+      url = 'http://localhost:5024/api/admin/';
+    }
+
     return this.http.get<any>(url, {
       withCredentials: true,
     });
