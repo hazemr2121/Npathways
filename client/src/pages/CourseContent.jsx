@@ -92,6 +92,7 @@ export default function CourseContent() {
 
         // Axios automatically parses JSON
         setCourse(response.data);
+        console.log("Course data:", response.data);
       } catch (error) {
         console.error("Error fetching course data:", error);
         // Handle error appropriately
@@ -137,6 +138,29 @@ export default function CourseContent() {
   if (!course) {
     return <Typography>Course not found</Typography>;
   }
+
+  // Add download function
+  const handleDownload = async (url) => {
+    try {
+      const response = await axios({
+        url,
+        method: "GET",
+        responseType: "blob", // Important for handling binary data
+      });
+
+      const blob = new Blob([response.data]);
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.download = url.split("/").pop(); // Extract filename from URL
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(downloadUrl);
+    } catch (error) {
+      console.error("Download failed:", error);
+    }
+  };
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -298,7 +322,7 @@ export default function CourseContent() {
                       <Button
                         variant="outlined"
                         startIcon={<DownloadIcon />}
-                        href={lesson.downloadLink}
+                        onClick={() => handleDownload(lesson.downloadLink)}
                         sx={{ mt: 2 }}
                       >
                         Download Materials
