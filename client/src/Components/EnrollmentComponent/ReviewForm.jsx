@@ -137,7 +137,7 @@ const ReviewForm = () => {
       };
       validateSubmissionData(submissionData);
 
-      console.log("Submitting data:", JSON.stringify(submissionData, null, 2));
+      // console.log("Submitting data:", JSON.stringify(submissionData, null, 2));
 
       const response = await axios.post(
         "http://localhost:5024/api/enrollment/createEnrollment",
@@ -480,7 +480,6 @@ const ReviewForm = () => {
         <AccordionDetails>
           <Grid container spacing={isSmallScreen ? 1 : 2} sx={{ mt: 1 }}>
             <Grid item xs={12}>
-              {console.log("Pathway data:", enrollmentData)}
               <TextField
                 label="Selected Pathway"
                 name="pathway"

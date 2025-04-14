@@ -161,7 +161,7 @@ export default function PersonalDetailsForm() {
 
   useEffect(() => {
     localStorage.setItem("formData", JSON.stringify(formData));
-    console.log(formData);
+    // console.log(formData);
   }, [formData]);
 
   const validationSchema = Yup.object({
@@ -322,6 +322,14 @@ export default function PersonalDetailsForm() {
       .required("GPA is required")
       .min(0, "GPA must be between 0-4")
       .max(4, "GPA must be between 0-4")
+      .test(
+        "decimal-places",
+        "GPA can have at most 2 decimal places",
+        (value) =>
+          value === undefined ||
+          value === null ||
+          /^\d+(\.\d{0,2})?$/.test(value.toString())
+      )
       .typeError("Enter a valid GPA"),
     motivationLetter: Yup.string()
       .required("Motivation letter is required")
@@ -439,8 +447,6 @@ export default function PersonalDetailsForm() {
         pathway: formData.pathway || "",
         pathwayId: formData.pathway?.id || formData.pathway || "",
       };
-
-      console.log(payload);
 
       setErrors({});
       setPersonalDetails(payload);
