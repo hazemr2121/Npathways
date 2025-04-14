@@ -149,10 +149,11 @@ export default function PersonalDetailsForm() {
           address: { ...prev.address, ...(parsedData.address || {}) },
           exam: parsedData.exam || [],
           facultyName: parsedData.facultyName || parsedData.faculty || "",
-          phoneCountry: parsedData.phoneCountry || parsedData.address?.country || "",
-          pathway: parsedData.pathway || "", 
+          phoneCountry:
+            parsedData.phoneCountry || parsedData.address?.country || "",
+          pathway: parsedData.pathway || "",
         }));
-       } catch (error) {
+      } catch (error) {
         console.error("Error parsing saved data:", error);
       }
     }
@@ -160,11 +161,17 @@ export default function PersonalDetailsForm() {
 
   useEffect(() => {
     localStorage.setItem("formData", JSON.stringify(formData));
-    console.log(formData)
+    console.log(formData);
   }, [formData]);
 
   const validationSchema = Yup.object({
-    pathway: Yup.string().required("Pathway is required"),
+    pathway: Yup.object(
+      { id: Yup.string().required("Pathway ID is required") },
+      ["name", "id"].reduce((acc, key) => {
+        acc[key] = Yup.string().required(`${key} is required`);
+        return acc;
+      }, {})
+    ),
     dateOfBirth: Yup.date()
       .required("Date of birth is required")
       .min(new Date(1980, 0, 1), "Date of birth must be 1980 or later")
@@ -186,7 +193,7 @@ export default function PersonalDetailsForm() {
           return this.createError({ message: "Phone number is required" });
         }
 
-        if (!/^[\+0-9\s\-\(\)]+$/.test(value)) {
+        if (!/^[+0-9\s\-()]+$/.test(value)) {
           return this.createError({
             message:
               "Phone number must contain only digits, spaces, dashes, parentheses, or a plus sign",
@@ -199,7 +206,7 @@ export default function PersonalDetailsForm() {
             return this.createError({ message: "Invalid country selected" });
           }
 
-          const cleanedValue = value.replace(/[\s\-\(\)]/g, "");
+          const cleanedValue = value.replace(/[\s\-()]/g, "");
           let normalizedValue;
           let saveValue = cleanedValue;
           const requirements = PHONE_LENGTH_REQUIREMENTS[phoneCountry] || {
@@ -338,8 +345,8 @@ export default function PersonalDetailsForm() {
         };
       } else if (name === "faculty") {
         newData = { ...newData, faculty: value, facultyName: value };
-      }  else if (name === "pathway") {
-        newData = { ...newData, pathway: typeof value === "object" ? value.name : value };
+      } else if (name === "pathway") {
+        newData = { ...newData, pathway: value };
       } else {
         newData = { ...newData, [name]: value };
       }
@@ -429,8 +436,11 @@ export default function PersonalDetailsForm() {
           street: formData.address.street || "",
         },
         phoneCountry: getCountryName(formData.phoneCountry) || "",
-        pathway: formData.pathway || "", 
+        pathway: formData.pathway || "",
+        pathwayId: formData.pathway?.id || formData.pathway || "",
       };
+
+      console.log(payload);
 
       setErrors({});
       setPersonalDetails(payload);

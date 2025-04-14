@@ -79,7 +79,7 @@ export default function PathwaySection({
   const [pathways, setPathways] = useState([]);
   const [error, setError] = useState(null);
 
-   useEffect(() => {
+  useEffect(() => {
     const fetchPathways = async () => {
       try {
         const response = await axios.get(
@@ -91,8 +91,8 @@ export default function PathwaySection({
             },
           }
         );
-         if (response.data && Array.isArray(response.data.data)) {
-           const formattedPathways = response.data.data.map((pathway) => ({
+        if (response.data && Array.isArray(response.data.data)) {
+          const formattedPathways = response.data.data.map((pathway) => ({
             id: pathway._id,
             name: pathway.name,
           }));
@@ -102,7 +102,6 @@ export default function PathwaySection({
         }
       } catch (err) {
         setError(err.response?.data?.message || "Failed to load pathways");
-        // console.error("Error", err);
       }
     };
 
@@ -115,6 +114,25 @@ export default function PathwaySection({
       [section]: !prev[section],
     }));
   }, []);
+
+  // Custom handler for pathway selection that sets both ID and name
+  const handlePathwayChange = (event) => {
+    const selectedId = event.target.value;
+    const selectedPathway = pathways.find((p) => p.id === selectedId);
+
+    // Create a custom event with both id and name
+    const customEvent = {
+      target: {
+        name: "pathway",
+        value: {
+          id: selectedId,
+          name: selectedPathway ? selectedPathway.name : "Unknown pathway",
+        },
+      },
+    };
+
+    handleChange(customEvent);
+  };
 
   return (
     <Box sx={{ mt: 4 }}>
@@ -136,8 +154,8 @@ export default function PathwaySection({
               <Select
                 labelId="pathway-select-label"
                 name="pathway"
-                value={formData.pathway || ""}
-                onChange={handleChange}
+                value={formData.pathway?.id || formData.pathway || ""}
+                onChange={handlePathwayChange}
                 onBlur={handleBlur}
                 label="Select Pathway"
               >

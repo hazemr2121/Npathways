@@ -120,7 +120,11 @@ const ReviewForm = () => {
         facultyName: enrollmentData.facultyName || enrollmentData.faculty || "",
         GPA: parseFloat(enrollmentData.GPA) || 0,
         motivationLetter: enrollmentData.motivationLetter || "",
-        pathway: enrollmentData.pathway || "", 
+        pathway:
+          enrollmentData.pathwayId ||
+          enrollmentData.pathway?.id ||
+          enrollmentData.pathway ||
+          "",
         address: {
           country: enrollmentData.address?.country || "",
           city: enrollmentData.address?.city || "",
@@ -476,10 +480,15 @@ const ReviewForm = () => {
         <AccordionDetails>
           <Grid container spacing={isSmallScreen ? 1 : 2} sx={{ mt: 1 }}>
             <Grid item xs={12}>
+              {console.log("Pathway data:", enrollmentData)}
               <TextField
                 label="Selected Pathway"
                 name="pathway"
-                value={enrollmentData.pathway || "Not selected"}
+                value={
+                  typeof enrollmentData.pathway === "object"
+                    ? enrollmentData.pathway.name
+                    : enrollmentData.pathway || "Not selected"
+                }
                 fullWidth
                 size={isSmallScreen ? "small" : "medium"}
                 InputProps={{ readOnly: true }}
