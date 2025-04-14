@@ -1,0 +1,180 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Verify Your Email</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body
+    style="
+      margin: 0;
+      padding: 0;
+      font-family: 'Poppins', sans-serif;
+      background-color: #f9f9f9;
+      color: #0e121a;
+    "
+  >
+    <table
+      role="presentation"
+      cellspacing="0"
+      cellpadding="0"
+      border="0"
+      align="center"
+      width="100%"
+      style="
+        max-width: 600px;
+        margin: auto;
+        background-color: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        margin-top: 20px;
+        margin-bottom: 20px;
+      "
+    >
+      <!-- Header -->
+      <tr>
+        <td
+          style="
+            padding: 30px 0;
+            text-align: center;
+            background-color: #e6f8f2;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+          "
+        >
+          <img
+            src="http://localhost:5024/uploads/logo.png"
+            alt="NPathways Logo"
+            style="max-width: 180px; height: auto"
+          />
+        </td>
+      </tr>
+
+      <!-- Content -->
+      <tr>
+        <td style="padding: 40px 30px; line-height: 1.6">
+          <h1
+            style="
+              color: #0e121a;
+              font-size: 24px;
+              margin-bottom: 20px;
+              font-weight: 600;
+            "
+          >
+            Verify Your Email Address
+          </h1>
+
+          <p style="margin-bottom: 24px; color: #181b21; font-size: 16px">
+            Hello
+            {{name}},
+          </p>
+
+          <p style="margin-bottom: 24px; color: #181b21; font-size: 16px">
+            Thanks for signing up with NPathways! Before we get started, we just
+            need to confirm this is really you.
+          </p>
+
+          <p style="margin-bottom: 24px; color: #181b21; font-size: 16px">
+            Please click the button below to verify your email address:
+          </p>
+
+          <!-- Button -->
+          <table
+            role="presentation"
+            cellspacing="0"
+            cellpadding="0"
+            border="0"
+            align="center"
+            style="margin: 30px auto"
+          >
+            <tr>
+              <td
+                style="
+                  border-radius: 4px;
+                  background-color: #46c98b;
+                  text-align: center;
+                "
+              >
+                <a
+                  href="{{verificationUrl}}"
+                  target="_blank"
+                  style="
+                    background-color: #46c98b;
+                    border: solid 1px #46c98b;
+                    border-radius: 4px;
+                    color: #ffffff;
+                    cursor: pointer;
+                    display: inline-block;
+                    font-size: 16px;
+                    font-weight: 500;
+                    margin: 0;
+                    padding: 12px 24px;
+                    text-decoration: none;
+                  "
+                >Verify Email Address</a>
+              </td>
+            </tr>
+          </table>
+
+          <p style="margin-bottom: 24px; color: #181b21; font-size: 16px">
+            If the button doesn't work, you can also copy and paste the
+            following link into your browser:
+          </p>
+
+          <p
+            style="
+              margin-bottom: 24px;
+              background-color: #f9f9f9;
+              border-radius: 4px;
+              padding: 10px;
+              word-break: break-all;
+              font-size: 14px;
+              color: #46c98b;
+            "
+          >
+            {{verificationUrl}}
+          </p>
+
+          <p style="margin-bottom: 24px; color: #181b21; font-size: 16px">
+            If you didn't sign up for NPathways, you can safely ignore this
+            email.
+          </p>
+
+          <p style="margin-bottom: 10px; color: #181b21; font-size: 16px">
+            Best regards,
+          </p>
+          <p style="margin-top: 0; color: #181b21; font-size: 16px">
+            The NPathways Team
+          </p>
+        </td>
+      </tr>
+
+      <!-- Footer -->
+      <tr>
+        <td
+          style="
+            padding: 20px 30px;
+            text-align: center;
+            background-color: #0b162c;
+            color: #ffffff;
+            border-bottom-left-radius: 8px;
+            border-bottom-right-radius: 8px;
+            font-size: 14px;
+          "
+        >
+          <p style="margin-bottom: 10px">
+            ©
+            {{year}}
+            NPathways. All rights reserved.
+          </p>
+          <p style="margin-top: 0; margin-bottom: 10px">
+            123 Learning Street, Education City
+          </p>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

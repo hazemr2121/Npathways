@@ -20,10 +20,7 @@ const authAdminController = {
     try {
       let data = { ...req.body, email: req.body.email.toLowerCase() };
 
-      const isDuplicate = await isDuplicatedEmail(
-        data.email,
-        null
-      );
+      const isDuplicate = await isDuplicatedEmail(data.email, null);
 
       if (isDuplicate) {
         return res.status(403).send({
@@ -216,7 +213,7 @@ const authAdminController = {
       // console.log(resetToken);
       await user.save({ validateeforeSave: false });
 
-      const reseUrl = `${req.protocol}://${req.headers.host}/api/admin/resetPassword/${resetToken}`;
+      const reseUrl = `http://localhost:5173/forgetpassword/admin/${resetToken}`;
       const message = `We have received a password reset request. please use the below link to reset password : 
     \n\n ${reseUrl} \n\n This reset Password Link will be valid only for 15 minutes `;
       // console.log(reseUrl);
@@ -224,9 +221,15 @@ const authAdminController = {
       try {
         await sendEmail({
           email: user.email,
-          subject: "Password change request receivesd",
-          message: message,
+          subject: "Reset Your Password",
+          templateName: "reset-password",
+          templateData: {
+            name: `${user.firstName} ${user.lastName}`,
+            resetUrl: reseUrl,
+            year: new Date().getFullYear(),
+          },
         });
+
         res.status(200).send({
           message: "password reset link send to the admine email",
         });
@@ -244,21 +247,17 @@ const authAdminController = {
   },
   resetPassword: async (req, res) => {
     try {
-      const { password, confirmPassword } = req.body;
-      const email = req.body.email.toLowerCase();
+      const { password } = req.body;
 
-      if (!email || !password || !confirmPassword) {
+      if (!password) {
         return res.status(400).send({ message: "All fields are required!" });
-      }
-
-      if (password !== confirmPassword) {
-        return res.status(400).json({ message: "Passwords do not match!" });
       }
 
       const token = crypto
         .createHash("sha256")
         .update(req.params.token)
         .digest("hex");
+
       const admin = await Admin.findOne({
         email,
         passwordResetToken: token,
@@ -279,6 +278,11 @@ const authAdminController = {
 
       const loginToken = jwt.sign({ id: admin._id }, process.env.SECRET_KEY, {
         expiresIn: process.env.JWT_EXPIRES_IN || "7d",
+      });
+
+      res.cookie("access_token", `Bearer ${loginToken}`, {
+        httpOnly: true,
+        maxAge: 60 * 60 * 24 * 2 * 1000,
       });
 
       return res.status(200).send({

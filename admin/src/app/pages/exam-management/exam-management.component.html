@@ -13,7 +13,7 @@
     <!-- Create New Exam Section -->
     <div class="exam-form-section card">
       <div class="card-header">
-        <h2 class="section-title">
+        <h2 class="section-title my-auto">
           <i class="fas" [class.fa-edit]="isEditing" [class.fa-plus-circle]="!isEditing"></i>
           {{ isEditing ? 'Edit Exam' : 'Create New Exam' }}
         </h2>
@@ -54,13 +54,16 @@
                 id="timeLimit"
                 class="form-control"
                 type="number"
+                min="1"
                 formControlName="timeLimit"
                 placeholder="Enter time limit in minutes"
                 [class.is-invalid]="examForm.get('timeLimit')?.invalid && examForm.get('timeLimit')?.touched"
               />
               <div class="invalid-feedback" *ngIf="examForm.get('timeLimit')?.invalid && examForm.get('timeLimit')?.touched">
                 <i class="fas fa-exclamation-circle me-1"></i>
-                Please enter a valid time limit
+                <span *ngIf="examForm.get('timeLimit')?.errors?.['required']">Time limit is required.</span>
+                <span *ngIf="examForm.get('timeLimit')?.errors?.['min']">Time limit cannot be 0 or negative.</span>
+                <span *ngIf="examForm.get('timeLimit')?.errors?.['pattern']">Please enter a valid whole number.</span>
               </div>
             </div>
           </div>
@@ -92,13 +95,19 @@
     <div class="exams-list-section card">
       <div class="card-header">
         <div class="d-flex justify-content-between align-items-center">
-          <h2 class="section-title">
+          <h2 class="section-title my-auto">
             <i class="fas fa-list me-2"></i>
             Exams List
           </h2>
           <div class="header-actions">
             <div class="search-box d-flex align-items-center">
-              <input type="text" placeholder="Search exams..." class="form-control">
+              <input
+                type="text"
+                placeholder="Search exams..."
+                class="form-control"
+                (input)="onSearch($event)"
+                [value]="searchTerm"
+              >
             </div>
           </div>
         </div>
@@ -127,7 +136,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let exam of exams">
+              <tr *ngFor="let exam of filteredExams">
                 <td>
                   <div class="exam-name">
                     <span class="name">{{ exam.name }}</span>
@@ -136,7 +145,7 @@
                 <td>
                   <div class="time-limit">
                     <span class="badge bg-info">
-                      <i class="fas fa-clock me-1"></i>
+                      <i class="fas fa-clock fa-xl me-1"></i>
                       {{ exam.timeLimit }} minutes
                     </span>
                   </div>

@@ -1,10 +1,17 @@
 import { Component, OnInit, HostListener } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
-import { FormsModule, FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import {
+  FormsModule,
+  FormBuilder,
+  FormGroup,
+  Validators,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { StudentService } from '../../services/student.service';
 import { InstructorService } from '../../services/instructor.service';
 import { AuthService } from '../../services/auth.service';
 import { Router, ActivatedRoute } from '@angular/router';
+import { CustomValidators } from '../../validators/CustomValidator';
 
 interface User {
   id: string;
@@ -60,77 +67,41 @@ export class UserManagementComponent implements OnInit {
     private route: ActivatedRoute
   ) {
     this.createAdminForm = this.fb.group({
-      firstName: [
-        '',
-        [
-          Validators.required,
-          Validators.pattern(/^[A-Za-z]+$/),
-          Validators.minLength(2),
-          Validators.maxLength(15),
-        ],
-      ],
-      lastName: [
-        '',
-        [
-          Validators.required,
-          Validators.pattern(/^[A-Za-z]+$/),
-          Validators.minLength(2),
-          Validators.maxLength(15),
-        ],
-      ],
+      firstName: ['', [Validators.required, CustomValidators.nameValidator()]],
+      lastName: ['', [Validators.required, CustomValidators.nameValidator()]],
       email: [
         '',
         [
           Validators.required,
           Validators.email,
-          Validators.pattern(/^[^\s@]+@[^\s@]+\.[^\s@]+$/),
+          CustomValidators.emailValidator(),
         ],
       ],
       password: [
         '',
         [
           Validators.required,
-          Validators.pattern(
-            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/
-          ),
+          CustomValidators.passwordStrengthValidator(),
         ],
       ],
     });
 
     this.createInstructorForm = this.fb.group({
-      firstName: [
-        '',
-        [
-          Validators.required,
-          Validators.pattern(/^[A-Za-z]+$/),
-          Validators.minLength(2),
-          Validators.maxLength(15),
-        ],
-      ],
-      lastName: [
-        '',
-        [
-          Validators.required,
-          Validators.pattern(/^[A-Za-z]+$/),
-          Validators.minLength(2),
-          Validators.maxLength(15),
-        ],
-      ],
+      firstName: ['', [Validators.required, CustomValidators.nameValidator()]],
+      lastName: ['', [Validators.required, CustomValidators.nameValidator()]],
       email: [
         '',
         [
           Validators.required,
           Validators.email,
-          Validators.pattern(/^[^\s@]+@[^\s@]+\.[^\s@]+$/),
+          CustomValidators.emailValidator(),
         ],
       ],
       password: [
         '',
         [
           Validators.required,
-          Validators.pattern(
-            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/
-          ),
+          CustomValidators.passwordStrengthValidator(),
         ],
       ],
     });
@@ -285,23 +256,6 @@ export class UserManagementComponent implements OnInit {
     this.showPassword = !this.showPassword;
   }
 
-  // Getter methods for form controls for instructor
-  get firstNameInstructor() {
-    return this.createInstructorForm.get('firstName');
-  }
-
-  get lastNameInstructor() {
-    return this.createInstructorForm.get('lastName');
-  }
-
-  get emailInstructor() {
-    return this.createInstructorForm.get('email');
-  }
-
-  get passwordInstructor() {
-    return this.createInstructorForm.get('password');
-  }
-
   // create admin user
   createAdmin(): void {
     if (this.createAdminForm.invalid) {
@@ -336,8 +290,27 @@ export class UserManagementComponent implements OnInit {
     });
   }
 
+  // Getter methods for form controls for instructor
+  get firstNameInstructor() {
+    return this.createInstructorForm.get('firstName');
+  }
+
+  get lastNameInstructor() {
+    return this.createInstructorForm.get('lastName');
+  }
+
+  get emailInstructor() {
+    return this.createInstructorForm.get('email');
+  }
+
+  get passwordInstructor() {
+    return this.createInstructorForm.get('password');
+  }
+
   //create instructors user
   createInstructor(): void {
+    this.createInstructorForm.markAllAsTouched();
+
     if (this.createInstructorForm.invalid) {
       Object.keys(this.createInstructorForm.controls).forEach((key) => {
         const control = this.createInstructorForm.get(key);
@@ -499,7 +472,7 @@ export class UserManagementComponent implements OnInit {
   }
 
   private isValidEmail(email: string): boolean {
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{3,}$/;
     return emailRegex.test(email);
   }
 

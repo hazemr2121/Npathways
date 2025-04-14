@@ -119,7 +119,7 @@ const createCourseSchema = Joi.object({
   description: Joi.string().required(),
   image: Joi.string(),
   price: Joi.number().required(),
-  discount: Joi.number().default(0),
+  discount: Joi.number().default(0).min(0).max(100),
   status: Joi.string().valid("published", "unpublished").default("unpublished"),
 });
 

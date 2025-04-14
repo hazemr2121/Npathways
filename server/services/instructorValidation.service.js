@@ -152,15 +152,15 @@ export const updatePasswordSchema = Joi.object({
     }),
 });
 export let resetPaswwordInstructorSchema = Joi.object({
-  email: Joi.string()
-    .email({ minDomainSegments: 2 })
-    .trim()
-    .required()
-    .messages({
-      "string.email": "Please enter a valid email address.",
-      "string.empty": "Email is required and cannot be empty.",
-      "any.required": "Email is a required field.",
-    }),
+  // email: Joi.string()
+  //   .email({ minDomainSegments: 2 })
+  //   .trim()
+  //   .required()
+  //   .messages({
+  //     "string.email": "Please enter a valid email address.",
+  //     "string.empty": "Email is required and cannot be empty.",
+  //     "any.required": "Email is a required field.",
+  //   }),
   password: Joi.string()
     .pattern(
       new RegExp(
@@ -175,13 +175,13 @@ export let resetPaswwordInstructorSchema = Joi.object({
       "string.empty": "Password is required and cannot be empty.",
       "any.required": "Password is a required field.",
     }),
-  confirmPassword: Joi.string()
-    .valid(Joi.ref("password"))
-    .trim()
-    .required()
-    .messages({
-      "any.only": "Confirm password must match the password.",
-      "string.empty": "Confirm Password is required and cannot be empty.",
-      "any.required": "Confirm Password is a required field.",
-    }),
+  // confirmPassword: Joi.string()
+  //   .valid(Joi.ref("password"))
+  //   .trim()
+  //   .required()
+  //   .messages({
+  //     "any.only": "Confirm password must match the password.",
+  //     "string.empty": "Confirm Password is required and cannot be empty.",
+  //     "any.required": "Confirm Password is a required field.",
+  //   }),
 });

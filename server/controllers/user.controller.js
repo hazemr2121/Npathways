@@ -32,52 +32,122 @@ const userController = {
       let newUser = new User(data);
       await newUser.save();
       // Verify /////////////////////////
-      const resetToken = jwt.sign({id:newUser._id},process.env.VERIFY_KEY);
+      const resetToken = jwt.sign({ id: newUser._id }, process.env.VERIFY_KEY);
       console.log(resetToken);
       // await data.save({ validateeforeSave: false });
-      const reseUrl = `${req.protocol}://${req.headers.host}/api/auth/VerifyEmail/${resetToken}`;
+      const reseUrl = `http://localhost:5173/verifyEmail/${resetToken}`;
       const message = `We have received a Verify Email request. please use the below link to Verify Account : 
       \n\n ${reseUrl} \n\n This verify Link will be valid only for 15 minutes `;
-      console.log(reseUrl);
+
+      // console.log(reseUrl);
+
       sendEmail({
-          email:data.email,
-          subject: "Verify Email",
-          message: message,
-      })
-   
+        email: newUser.email,
+        subject: "Verify Your Email Address",
+        templateName: "verify-email",
+        templateData: {
+          name: `${newUser.firstName} ${newUser.lastName}`,
+          verificationUrl: reseUrl,
+          year: new Date().getFullYear(),
+        },
+      });
+
       return res.status(201).send({
         message: "Account Created Successfully",
        });
     } catch (error) {
       console.error("New User Error:", error);
       return res.status(500).send({
+        message: "Error:" + error.message,
+      });
+    }
+  },
+  VerifyEmail: async (req, res) => {
+    try {
+      let { token } = req.params;
+      jwt.verify(token, process.env.VERIFY_KEY, async (error, decoded) => {
+        if (error) {
+          res.send(error);
+        }
+        let updateUser = await User.findByIdAndUpdate(
+          decoded.id,
+          { verify: true },
+          { new: true }
+        );
+
+        if (!updateUser) {
+          return res.status(404).send({
+            message: "User not found",
+          });
+        }
+
+        updateUser = updateUser.toObject();
+        delete updateUser.password;
+        delete updateUser.tokens;
+
+        res.json({ message: updateUser });
+      });
+    } catch (error) {
+      console.error("Verify User Error:", error);
+      return res.status(500).send({
         message: error.message,
       });
     }
   },
-  VerifyEmail:async(req,res)=>{
-      try {
-        let {token}=req.params
-        jwt.verify(token,process.env.VERIFY_KEY,async(error,decoded)=>{
-            if(error){
-              res.send(error)
-            }
-            let updateUser=  await User.findByIdAndUpdate(decoded.id,{verify:true},{new:true})
-            res.json({message:updateUser})
-
-        })
-      }catch(error){
-        console.error("Verify User Error:", error);
-        return res.status(500).send({
-          message: error.message,
+  resendVerifyEmail: async (req, res) => {
+    try {
+      if (!req.body.email) {
+        return res.status(400).send({
+          message: "Email is required",
         });
       }
+
+      const email = req.body.email.toLowerCase();
+
+      const user = await User.findOne({ email });
+
+      if (!user) {
+        return res.status(404).send({
+          message: "User not found",
+        });
+      }
+
+      if (user.verify) {
+        return res.status(400).send({
+          message: "User already verified",
+        });
+      }
+      const resetToken = jwt.sign({ id: user._id }, process.env.VERIFY_KEY);
+      const reseUrl = `http://localhost:5173/verifyEmail/${resetToken}`;
+      const message = `We have received a Verify Email request. please use the below link to Verify Account :
+      \n\n ${reseUrl} \n\n This verify Link will be valid only for 15 minutes `;
+      // console.log(reseUrl);
+
+      sendEmail({
+        email: user.email,
+        subject: "Verify Your Email Address",
+        templateName: "verify-email",
+        templateData: {
+          name: `${user.firstName} ${user.lastName}`,
+          verificationUrl: reseUrl,
+          year: new Date().getFullYear(),
+        },
+      });
+      return res.status(201).send({
+        message: "Verify Email Sent Successfully",
+      });
+    } catch (error) {
+      console.error("Resend Verify Email Error:", error);
+      return res.status(500).send({
+        message: "Error:" + error.message,
+      });
+    }
   },
   // todo optimize login for universal login
   login: async (req, res) => {
     try {
       let { email, password } = req.body;
-       email = email.toLowerCase();
+      email = email.toLowerCase();
       let user = await User.findOne({ email })
         .populate("pathways")
         .populate("courses");
@@ -86,7 +156,7 @@ const userController = {
           message: "Invalid Email Or Password",
         });
       }
-      if(user.verify){
+      if (user.verify) {
         let validPassword = await bcrypt.compare(password, user.password);
         if (!validPassword) {
           return res.status(404).send({
@@ -99,7 +169,7 @@ const userController = {
           httpOnly: true,
           maxAge: 60 * 60 * 24 * 2 * 1000,
         });
-  
+
         user.tokens.push(token);
         if (user.tokens.length > 2) {
           user.tokens = user.tokens.slice(-2);
@@ -115,16 +185,14 @@ const userController = {
           pathways: user.pathways,
           courses: user.courses,
         });
-
-      }else {
-        return res.send({
+      } else {
+        return res.status(400).send({
           message: "Please Verify Your Email First",
-        }) 
+        });
       }
 
       // console.log("Updated User:", user);
       // console.log("Updated User:", user);
-       
     } catch (error) {
       console.error("Login Error:", error);
       return res.status(500).send({
@@ -204,7 +272,7 @@ const userController = {
   changUserImage: async (req, res) => {
     try {
       const userId = req.user._id;
-       if (req.file) {
+      if (req.file) {
         const user = await User.findById(userId);
         const HOST = process.env.HOST || "http://localhost";
         const PORT = process.env.PORT || 5024;
@@ -282,20 +350,26 @@ const userController = {
         });
       }
       const resetToken = user.createResetPasswordToken();
-      console.log(resetToken);
+      // console.log(resetToken);
       await user.save({ validateeforeSave: false });
 
-      const reseUrl = `${req.protocol}://${req.headers.host}/api/auth/resetPassword/${resetToken}`;
+      const reseUrl = `http://localhost:5173/forgetpassword/user/${resetToken}`;
       const message = `We have received a password reset request. please use the below link to reset password : 
       \n\n ${reseUrl} \n\n This reset Password Link will be valid only for 15 minutes `;
-      console.log(reseUrl);
+      // console.log(reseUrl);
 
       try {
         await sendEmail({
           email: user.email,
-          subject: "Password change request receivesd",
-          message: message,
+          subject: "Reset Your Password",
+          templateName: "reset-password",
+          templateData: {
+            name: `${user.firstName} ${user.lastName}`,
+            resetUrl: reseUrl,
+            year: new Date().getFullYear(),
+          },
         });
+
         res.status(200).send({
           message: "password reset link send to the admine email",
         });
@@ -313,15 +387,14 @@ const userController = {
   },
   resetPassword: async (req, res) => {
     try {
-      const { password, confirmPassword } = req.body;
-      const email = req.body.email.toLowerCase();
+      const { password } = req.body;
 
-      if (!email || !password || !confirmPassword) {
-        return res.status(400).send({ message: "All fields are required!" });
+      if (!password) {
+        return res.status(400).send({ message: "Password is required!" });
       }
 
-      if (password !== confirmPassword) {
-        return res.status(400).json({ message: "Passwords do not match!" });
+      if (!req.params || !req.params.token) {
+        return res.status(400).send({ message: "Token is required!" });
       }
 
       const token = crypto
@@ -329,26 +402,34 @@ const userController = {
         .update(req.params.token)
         .digest("hex");
       const user = await User.findOne({
-        email,
         passwordResetToken: token,
         passwordResetExpires: { $gt: Date.now() },
       });
 
       if (!user) {
-        return res.status(400).send({ message: "User Not Found" });
+        return res.status(400).send({ message: "Invalid or expired token" });
       }
 
       user.password = password;
-      user.confirmPassword = confirmPassword;
       user.passwordResetToken = undefined;
       user.passwordResetExpires = undefined;
       user.changePasswordAt = Date.now();
 
-      await user.save();
-
       const loginToken = jwt.sign({ id: user._id }, process.env.SECRET_KEY, {
         expiresIn: process.env.JWT_EXPIRES_IN || "7d",
       });
+
+      res.cookie("access_token", `Bearer ${loginToken}`, {
+        httpOnly: true,
+        maxAge: 60 * 60 * 24 * 2 * 1000,
+      });
+
+      user.tokens.push(token);
+      if (user.tokens.length > 2) {
+        user.tokens = user.tokens.slice(-2);
+      }
+
+      await user.save();
 
       return res.status(200).send({
         message: "Password reset successfully. You are now logged in!",

@@ -15,6 +15,8 @@ import {
   Divider,
   Link as MuiLink,
   useTheme,
+  Card,
+  Fade,
 } from "@mui/material";
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -28,6 +30,9 @@ import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import EmailIcon from "@mui/icons-material/Email";
 import LockIcon from "@mui/icons-material/Lock";
 import LoginIcon from "@mui/icons-material/Login";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import SendIcon from "@mui/icons-material/Send";
+import KeyIcon from "@mui/icons-material/Key";
 import axios from "axios";
 
 const validationSchema = Yup.object().shape({
@@ -47,13 +52,25 @@ const validationSchema = Yup.object().shape({
     ),
 });
 
+const resetPasswordValidation = Yup.object().shape({
+  email: Yup.string()
+    .email("Invalid email address")
+    .required("Email is required")
+    .matches(
+      /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+      "Please enter a valid email address"
+    ),
+});
+
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [apiError, setApiError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [forgotPasswordStatus, setForgotPasswordStatus] = useState(null);
   const [isForgotPasswordLoading, setIsForgotPasswordLoading] = useState(false);
-  const [verify, setVerify] = useState(true);
+  const [verify, setVerify] = useState(false);
+  const [showPasswordReset, setShowPasswordReset] = useState(false);
+  const [resnedVerification, setResendVerification] = useState(false);
   const navigate = useNavigate();
   const { login, isEnrolled, isLoading } = useContext(AuthContext);
   const theme = useTheme();
@@ -65,6 +82,10 @@ const Login = () => {
     password: "",
   };
 
+  const resetPasswordInitialValues = {
+    email: "",
+  };
+
   const handleShowPassword = () => {
     setShowPassword(!showPassword);
   };
@@ -73,6 +94,7 @@ const Login = () => {
     setIsSubmitting(true);
     setApiError(null);
     setVerify(false);
+    setResendVerification(false);
 
     try {
       const { error } = await login(values);
@@ -80,13 +102,13 @@ const Login = () => {
         setApiError(
           error || "Login failed. Please check your credentials and try again."
         );
-    } catch (err) {
-      console.error("Login error:", err);
-      setApiError(err);
-      if (err == "Verify your email first") {
+      if (error == "Please Verify Your Email First") {
         setVerify(true);
         return;
       }
+    } catch (err) {
+      console.error("Login error:", err);
+      setApiError(err);
     } finally {
       setIsSubmitting(false);
     }
@@ -97,21 +119,20 @@ const Login = () => {
     validationSchema,
     onSubmit: sendDataToAPI,
   });
-  function forgetPassword() {
-    if (!formik.values.email) {
-      setForgotPasswordStatus({
-        type: "error",
-        message: "Please enter your email address first",
-      });
-      return;
-    }
 
+  const resetPasswordFormik = useFormik({
+    initialValues: resetPasswordInitialValues,
+    validationSchema: resetPasswordValidation,
+    onSubmit: handleResetPasswordSubmit,
+  });
+
+  function handleResetPasswordSubmit(values) {
     setIsForgotPasswordLoading(true);
     setForgotPasswordStatus(null);
 
     axios
       .post("http://localhost:5024/api/user/forgetPassword", {
-        email: formik.values.email,
+        email: values.email,
       })
       .then((response) => {
         setForgotPasswordStatus({
@@ -130,6 +151,39 @@ const Login = () => {
       })
       .finally(() => {
         setIsForgotPasswordLoading(false);
+      });
+  }
+
+  function forgetPassword() {
+    setShowPasswordReset(true);
+    resetPasswordFormik.setValues({
+      email: formik.values.email || "",
+    });
+    setForgotPasswordStatus(null);
+  }
+
+  function handleBackToLogin() {
+    setShowPasswordReset(false);
+    setForgotPasswordStatus(null);
+  }
+  function handleResendVerification() {
+    setVerify(false);
+    axios
+      .post(`http://localhost:5024/api/user/resendVerifyEmail/`, {
+        email: formik.values.email,
+      })
+      .then((response) => {
+        setResendVerification(true);
+        setApiError(null);
+
+        // setApiError("Verification email sent successfully!");
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        setApiError(
+          error.response?.data?.message ||
+            "Failed to send verification email. Please try again."
+        );
       });
   }
 
@@ -197,7 +251,7 @@ const Login = () => {
                 textAlign: "center",
               }}
             >
-              Welcome Back
+              {showPasswordReset ? "Reset Password" : "Welcome Back"}
             </Typography>
 
             <Typography
@@ -209,13 +263,23 @@ const Login = () => {
                 textAlign: "center",
               }}
             >
-              Log in to access your learning journey and continue your progress
+              {showPasswordReset
+                ? "Enter your email to receive password reset instructions"
+                : "Log in to access your learning journey and continue your progress"}
             </Typography>
 
             <Box
               component="img"
-              src="/User_Profile-512.webp" // Replace with your illustration
-              alt="Login Illustration"
+              src={
+                showPasswordReset
+                  ? "/Forgot password-rafiki.svg"
+                  : "/User_Profile-512.webp"
+              }
+              alt={
+                showPasswordReset
+                  ? "Reset Password Illustration"
+                  : "Login Illustration"
+              }
               sx={{
                 width: "70%",
                 maxWidth: "300px",
@@ -224,7 +288,7 @@ const Login = () => {
             />
           </Box>
 
-          {/* Right Side - Login Form */}
+          {/* Right Side - Login Form or Password Reset */}
           <Box
             sx={{
               flex: { xs: "0 0 100%", md: "0 0 55%" },
@@ -263,258 +327,406 @@ const Login = () => {
                   color: "#0B162C",
                 }}
               >
-                Welcome Back
+                {showPasswordReset ? "Reset Password" : "Welcome Back"}
               </Typography>
             </Box>
 
-            <Typography
-              variant="h5"
-              component="h2"
-              sx={{
-                fontFamily: "Poppins-SemiBold, Helvetica",
-                fontWeight: 600,
-                mb: 1,
-                color: "#0B162C",
-              }}
-            >
-              Sign In
-            </Typography>
+            <Fade in={!showPasswordReset} timeout={500} unmountOnExit>
+              <Box>
+                <Typography
+                  variant="h5"
+                  component="h2"
+                  sx={{
+                    fontFamily: "Poppins-SemiBold, Helvetica",
+                    fontWeight: 600,
+                    mb: 1,
+                    color: "#0B162C",
+                  }}
+                >
+                  Sign In
+                </Typography>
 
-            <Typography
-              variant="body1"
-              sx={{
-                fontFamily: "Poppins-Regular, Helvetica",
-                mb: 4,
-                color: "text.secondary",
-              }}
-            >
-              Enter your credentials to continue
-            </Typography>
+                <Typography
+                  variant="body1"
+                  sx={{
+                    fontFamily: "Poppins-Regular, Helvetica",
+                    mb: 4,
+                    color: "text.secondary",
+                  }}
+                >
+                  Enter your credentials to continue
+                </Typography>
 
-            {apiError && (
-              <Alert
-                severity="error"
-                sx={{
-                  mb: 3,
-                  borderRadius: 2,
-                  "& .MuiAlert-icon": {
-                    alignItems: "center",
-                  },
-                }}
-              >
-                {apiError}
-                {verify && <Button sx={{ ml: 4 }}>Resend Verify Email</Button>}
-              </Alert>
-            )}
-            {/* {verify && (
-              <Alert
-                severity="error"
-                sx={{
-                  mb: 3,
-                  borderRadius: 2,
-                  "& .MuiAlert-icon": {
-                    alignItems: "center",
-                  },
-                }}
-              >
-                {apiError}
-                <Button>Resend Verify Email</Button>
-              </Alert>
-            )} */}
-
-            <Box component="form" onSubmit={formik.handleSubmit}>
-              <Grid container spacing={3}>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Email Address"
-                    variant="outlined"
-                    id="email"
-                    name="email"
-                    type="email"
-                    autoComplete="email"
-                    value={formik.values.email}
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    error={formik.touched.email && Boolean(formik.errors.email)}
-                    helperText={formik.touched.email && formik.errors.email}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <EmailIcon
-                            color={
-                              formik.touched.email && formik.errors.email
-                                ? "error"
-                                : "action"
-                            }
-                          />
-                        </InputAdornment>
-                      ),
-                    }}
+                {apiError && (
+                  <Alert
+                    severity="error"
                     sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: 2,
-                      },
-                    }}
-                  />
-                </Grid>
-
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Password"
-                    type={showPassword ? "text" : "password"}
-                    variant="outlined"
-                    id="password"
-                    name="password"
-                    autoComplete="current-password"
-                    value={formik.values.password}
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                    error={
-                      formik.touched.password && Boolean(formik.errors.password)
-                    }
-                    helperText={
-                      formik.touched.password && formik.errors.password
-                    }
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <LockIcon
-                            color={
-                              formik.touched.password && formik.errors.password
-                                ? "error"
-                                : "action"
-                            }
-                          />
-                        </InputAdornment>
-                      ),
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <IconButton
-                            aria-label={
-                              showPassword ? "hide password" : "show password"
-                            }
-                            onClick={handleShowPassword}
-                            edge="end"
-                            size="large"
-                          >
-                            {showPassword ? (
-                              <VisibilityOffIcon />
-                            ) : (
-                              <VisibilityIcon />
-                            )}
-                          </IconButton>
-                        </InputAdornment>
-                      ),
-                    }}
-                    sx={{
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: 2,
-                      },
-                    }}
-                  />
-                </Grid>
-
-                <Grid item xs={12} sx={{ textAlign: "right" }}>
-                  <MuiLink
-                    onClick={forgetPassword}
-                    underline="hover"
-                    sx={{
-                      color: "primary.main",
-                      fontFamily: "Poppins-Medium",
-                      fontSize: "0.875rem",
-                      cursor: "pointer",
-                      transition: "color 0.2s",
-                      "&:hover": {
-                        color: "primary.dark",
+                      mb: 3,
+                      borderRadius: 2,
+                      "& .MuiAlert-icon": {
+                        alignItems: "center",
                       },
                     }}
                   >
-                    {isForgotPasswordLoading
-                      ? "Sending..."
-                      : "Forgot your password?"}
-                  </MuiLink>
-                </Grid>
-
-                {forgotPasswordStatus && (
-                  <Grid item xs={12}>
-                    <Alert
-                      severity={forgotPasswordStatus.type}
-                      sx={{
-                        borderRadius: 2,
-                        "& .MuiAlert-icon": {
-                          alignItems: "center",
-                        },
-                      }}
-                    >
-                      {forgotPasswordStatus.message}
-                    </Alert>
-                  </Grid>
+                    {apiError}
+                    {verify && (
+                      <Button sx={{ ml: 4 }} onClick={handleResendVerification}>
+                        Resend Verify Email
+                      </Button>
+                    )}
+                  </Alert>
+                )}
+                {resnedVerification && (
+                  <Alert
+                    severity="success"
+                    sx={{
+                      mb: 3,
+                      borderRadius: 2,
+                      "& .MuiAlert-icon": {
+                        alignItems: "center",
+                      },
+                    }}
+                  >
+                    Verification email sent successfully!
+                  </Alert>
                 )}
 
-                <Grid item xs={12}>
-                  <Button
-                    variant="contained"
-                    type="submit"
-                    fullWidth
-                    disabled={isSubmitting}
-                    startIcon={!isSubmitting && <LoginIcon />}
+                <Box component="form" onSubmit={formik.handleSubmit}>
+                  <Grid container spacing={3}>
+                    <Grid item xs={12}>
+                      <TextField
+                        fullWidth
+                        label="Email Address"
+                        variant="outlined"
+                        id="email"
+                        name="email"
+                        type="email"
+                        autoComplete="email"
+                        value={formik.values.email}
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                        error={
+                          formik.touched.email && Boolean(formik.errors.email)
+                        }
+                        helperText={formik.touched.email && formik.errors.email}
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <EmailIcon
+                                color={
+                                  formik.touched.email && formik.errors.email
+                                    ? "error"
+                                    : "action"
+                                }
+                              />
+                            </InputAdornment>
+                          ),
+                        }}
+                        sx={{
+                          "& .MuiOutlinedInput-root": {
+                            borderRadius: 2,
+                          },
+                        }}
+                      />
+                    </Grid>
+
+                    <Grid item xs={12}>
+                      <TextField
+                        fullWidth
+                        label="Password"
+                        type={showPassword ? "text" : "password"}
+                        variant="outlined"
+                        id="password"
+                        name="password"
+                        autoComplete="current-password"
+                        value={formik.values.password}
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                        error={
+                          formik.touched.password &&
+                          Boolean(formik.errors.password)
+                        }
+                        helperText={
+                          formik.touched.password && formik.errors.password
+                        }
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <LockIcon
+                                color={
+                                  formik.touched.password &&
+                                  formik.errors.password
+                                    ? "error"
+                                    : "action"
+                                }
+                              />
+                            </InputAdornment>
+                          ),
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              <IconButton
+                                aria-label={
+                                  showPassword
+                                    ? "hide password"
+                                    : "show password"
+                                }
+                                onClick={handleShowPassword}
+                                edge="end"
+                                size="large"
+                              >
+                                {showPassword ? (
+                                  <VisibilityOffIcon />
+                                ) : (
+                                  <VisibilityIcon />
+                                )}
+                              </IconButton>
+                            </InputAdornment>
+                          ),
+                        }}
+                        sx={{
+                          "& .MuiOutlinedInput-root": {
+                            borderRadius: 2,
+                          },
+                        }}
+                      />
+                    </Grid>
+
+                    <Grid item xs={12} sx={{ textAlign: "right" }}>
+                      <MuiLink
+                        component="button"
+                        type="button"
+                        onClick={forgetPassword}
+                        underline="hover"
+                        sx={{
+                          color: "primary.main",
+                          fontFamily: "Poppins-Medium",
+                          fontSize: "0.875rem",
+                          cursor: "pointer",
+                          transition: "color 0.2s",
+                          background: "none",
+                          border: "none",
+                          "&:hover": {
+                            color: "primary.dark",
+                          },
+                        }}
+                      >
+                        Forgot your password?
+                      </MuiLink>
+                    </Grid>
+
+                    <Grid item xs={12}>
+                      <Button
+                        variant="contained"
+                        type="submit"
+                        fullWidth
+                        disabled={isSubmitting}
+                        startIcon={!isSubmitting && <LoginIcon />}
+                        sx={{
+                          borderRadius: "100px",
+                          py: 1.5,
+                          backgroundColor: "#46c98b",
+                          fontFamily: "Poppins-SemiBold, Helvetica",
+                          fontWeight: 600,
+                          textTransform: "none",
+                          fontSize: "1rem",
+                          boxShadow: "0 4px 10px rgba(70, 201, 139, 0.3)",
+                          transition: "all 0.2s ease",
+                          "&:hover": {
+                            backgroundColor: "#3ab77a",
+                            transform: "translateY(-2px)",
+                            boxShadow: "0 6px 12px rgba(70, 201, 139, 0.4)",
+                          },
+                        }}
+                      >
+                        {isSubmitting ? (
+                          <CircularProgress size={24} color="inherit" />
+                        ) : (
+                          "Sign In"
+                        )}
+                      </Button>
+                    </Grid>
+
+                    <Grid item xs={12}>
+                      <Divider>
+                        <Typography variant="body2" color="text.secondary">
+                          OR
+                        </Typography>
+                      </Divider>
+                    </Grid>
+
+                    <Grid item xs={12} sx={{ textAlign: "center" }}>
+                      <Typography variant="body2" color="text.secondary">
+                        Don&apos;t have an account?{" "}
+                        <MuiLink
+                          component={Link}
+                          to="/register"
+                          underline="hover"
+                          sx={{
+                            color: "#46c98b",
+                            fontFamily: "Poppins-Medium",
+                            transition: "all 0.2s ease",
+                            "&:hover": {
+                              color: "#3ab77a",
+                            },
+                          }}
+                        >
+                          Create account
+                        </MuiLink>
+                      </Typography>
+                    </Grid>
+                  </Grid>
+                </Box>
+              </Box>
+            </Fade>
+
+            {/* Password Reset Form */}
+            <Fade in={showPasswordReset} timeout={500} unmountOnExit>
+              <Box>
+                <Typography
+                  variant="h5"
+                  component="h2"
+                  sx={{
+                    fontFamily: "Poppins-SemiBold, Helvetica",
+                    fontWeight: 600,
+                    mb: 1,
+                    color: "#0B162C",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1,
+                  }}
+                >
+                  <KeyIcon color="primary" /> Reset Password
+                </Typography>
+
+                <Typography
+                  variant="body1"
+                  sx={{
+                    fontFamily: "Poppins-Regular, Helvetica",
+                    mb: 4,
+                    color: "text.secondary",
+                  }}
+                >
+                  Enter your email address to receive password reset
+                  instructions
+                </Typography>
+
+                {forgotPasswordStatus && (
+                  <Alert
+                    severity={forgotPasswordStatus.type}
                     sx={{
-                      borderRadius: "100px",
-                      py: 1.5,
-                      backgroundColor: "#46c98b",
-                      fontFamily: "Poppins-SemiBold, Helvetica",
-                      fontWeight: 600,
-                      textTransform: "none",
-                      fontSize: "1rem",
-                      boxShadow: "0 4px 10px rgba(70, 201, 139, 0.3)",
-                      transition: "all 0.2s ease",
-                      "&:hover": {
-                        backgroundColor: "#3ab77a",
-                        transform: "translateY(-2px)",
-                        boxShadow: "0 6px 12px rgba(70, 201, 139, 0.4)",
+                      mb: 3,
+                      borderRadius: 2,
+                      "& .MuiAlert-icon": {
+                        alignItems: "center",
                       },
                     }}
                   >
-                    {isSubmitting ? (
-                      <CircularProgress size={24} color="inherit" />
-                    ) : (
-                      "Sign In"
-                    )}
-                  </Button>
-                </Grid>
+                    {forgotPasswordStatus.message}
+                  </Alert>
+                )}
 
-                <Grid item xs={12}>
-                  <Divider>
-                    <Typography variant="body2" color="text.secondary">
-                      OR
-                    </Typography>
-                  </Divider>
-                </Grid>
+                <Box
+                  component="form"
+                  onSubmit={resetPasswordFormik.handleSubmit}
+                >
+                  <Grid container spacing={3}>
+                    <Grid item xs={12}>
+                      <TextField
+                        fullWidth
+                        label="Email Address"
+                        variant="outlined"
+                        id="resetEmail"
+                        name="email"
+                        type="email"
+                        autoComplete="email"
+                        value={resetPasswordFormik.values.email}
+                        onChange={resetPasswordFormik.handleChange}
+                        onBlur={resetPasswordFormik.handleBlur}
+                        error={
+                          resetPasswordFormik.touched.email &&
+                          Boolean(resetPasswordFormik.errors.email)
+                        }
+                        helperText={
+                          resetPasswordFormik.touched.email &&
+                          resetPasswordFormik.errors.email
+                        }
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <EmailIcon
+                                color={
+                                  resetPasswordFormik.touched.email &&
+                                  resetPasswordFormik.errors.email
+                                    ? "error"
+                                    : "action"
+                                }
+                              />
+                            </InputAdornment>
+                          ),
+                        }}
+                        sx={{
+                          "& .MuiOutlinedInput-root": {
+                            borderRadius: 2,
+                          },
+                        }}
+                      />
+                    </Grid>
 
-                <Grid item xs={12} sx={{ textAlign: "center" }}>
-                  <Typography variant="body2" color="text.secondary">
-                    Don&apos;t have an account?{" "}
-                    <MuiLink
-                      component={Link}
-                      to="/register"
-                      underline="hover"
-                      sx={{
-                        color: "#46c98b",
-                        fontFamily: "Poppins-Medium",
-                        transition: "all 0.2s ease",
-                        "&:hover": {
-                          color: "#3ab77a",
-                        },
-                      }}
-                    >
-                      Create account
-                    </MuiLink>
-                  </Typography>
-                </Grid>
-              </Grid>
-            </Box>
+                    <Grid item xs={12}>
+                      <Button
+                        variant="contained"
+                        type="submit"
+                        fullWidth
+                        disabled={isForgotPasswordLoading}
+                        startIcon={!isForgotPasswordLoading && <SendIcon />}
+                        sx={{
+                          borderRadius: "100px",
+                          py: 1.5,
+                          backgroundColor: "#46c98b",
+                          fontFamily: "Poppins-SemiBold, Helvetica",
+                          fontWeight: 600,
+                          textTransform: "none",
+                          fontSize: "1rem",
+                          boxShadow: "0 4px 10px rgba(70, 201, 139, 0.3)",
+                          transition: "all 0.2s ease",
+                          "&:hover": {
+                            backgroundColor: "#3ab77a",
+                            transform: "translateY(-2px)",
+                            boxShadow: "0 6px 12px rgba(70, 201, 139, 0.4)",
+                          },
+                        }}
+                      >
+                        {isForgotPasswordLoading ? (
+                          <CircularProgress size={24} color="inherit" />
+                        ) : (
+                          "Send Reset Link"
+                        )}
+                      </Button>
+                    </Grid>
+
+                    <Grid item xs={12} sx={{ textAlign: "center", mt: 2 }}>
+                      <Button
+                        startIcon={<ArrowBackIcon />}
+                        onClick={handleBackToLogin}
+                        aria-label="Back to login"
+                        sx={{
+                          color: "text.secondary",
+                          fontFamily: "Poppins-Medium",
+                          textTransform: "none",
+                          transition: "color 0.2s",
+                          "&:hover": {
+                            backgroundColor: "transparent",
+                            color: "primary.main",
+                          },
+                        }}
+                      >
+                        Back to login
+                      </Button>
+                    </Grid>
+                  </Grid>
+                </Box>
+              </Box>
+            </Fade>
           </Box>
         </Paper>
       </motion.div>

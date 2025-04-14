@@ -64,24 +64,24 @@ export class ExamDetailsComponent implements OnInit {
 
   private createExamForm(): FormGroup {
     return this.fb.group({
-      name: ['', Validators.required],
-      timeLimit: ['', [Validators.required, Validators.min(1)]],
+      name: ['', [Validators.required, Validators.minLength(3)]],
+      timeLimit: ['', [Validators.required, Validators.min(1), Validators.pattern('^[0-9]*$')]],
       questions: this.fb.array([]),
     });
   }
 
   private createQuestionForm(): FormGroup {
     return this.fb.group({
-      question: ['', Validators.required],
+      question: ['', [Validators.required, Validators.minLength(5)]],
       difficulty: ['medium', Validators.required],
-      answers: this.fb.array([]),
+      answers: this.fb.array([], [Validators.required, Validators.minLength(this.MIN_ANSWERS)]),
     });
   }
 
-  private createAnswerForm(): FormGroup {
+  private createAnswerForm(isCorrect: boolean = false): FormGroup {
     return this.fb.group({
-      answer: ['', Validators.required],
-      isCorrect: [false],
+      answer: ['', [Validators.required, Validators.minLength(1)]],
+      isCorrect: [isCorrect],
     });
   }
 
@@ -125,19 +125,27 @@ export class ExamDetailsComponent implements OnInit {
       });
 
       const answersFormArray = questionForm.get('answers') as FormArray;
+      let hasSetCorrect = false;
       question.answers.forEach((answer) => {
+        const isCorrect = !hasSetCorrect && answer.isCorrect;
+        if (isCorrect) {
+          hasSetCorrect = true;
+        }
         answersFormArray.push(
           this.fb.group({
             answer: answer.answer,
-            isCorrect: answer.isCorrect,
+            isCorrect: isCorrect,
           })
         );
       });
 
+      if (!hasSetCorrect && answersFormArray.length > 0) {
+        answersFormArray.at(0).get('isCorrect')?.setValue(true);
+      }
+
       questionsFormArray.push(questionForm);
     });
 
-    // Disable form controls if not in edit mode
     if (!this.isEditing) {
       this.disableFormControls();
     }
@@ -146,9 +154,9 @@ export class ExamDetailsComponent implements OnInit {
   addQuestion(): void {
     const questionForm = this.createQuestionForm();
     const answersArray = questionForm.get('answers') as FormArray;
-    // Add 3 default answer fields
-    for (let i = 0; i < 3; i++) {
-      answersArray.push(this.createAnswerForm());
+    answersArray.push(this.createAnswerForm(true));
+    for (let i = 1; i < 3; i++) {
+      answersArray.push(this.createAnswerForm(false));
     }
     this.questions.push(questionForm);
   }
@@ -160,9 +168,7 @@ export class ExamDetailsComponent implements OnInit {
   addAnswer(questionIndex: number): void {
     const answers = this.getAnswers(questionIndex);
     if (answers.length < this.MAX_ANSWERS) {
-      answers.push(this.createAnswerForm());
-    } else {
-      alert(`Maximum ${this.MAX_ANSWERS} answers allowed per question.`);
+      answers.push(this.createAnswerForm(false));
     }
   }
 
@@ -171,55 +177,62 @@ export class ExamDetailsComponent implements OnInit {
     if (answers.length > this.MIN_ANSWERS) {
       answers.removeAt(answerIndex);
     } else {
-      alert(`Minimum ${this.MIN_ANSWERS} answers required per question.`);
+      this.showErrorNotification(
+        `Minimum ${this.MIN_ANSWERS} answers required per question.`
+      );
     }
+  }
+
+  setCorrectAnswer(questionIndex: number, answerIndex: number): void {
+    const answers = this.getAnswers(questionIndex);
+    answers.controls.forEach((answer, idx) => {
+      if (idx === answerIndex) {
+        answer.get('isCorrect')?.setValue(true);
+      } else {
+        answer.get('isCorrect')?.setValue(false);
+      }
+    });
   }
 
   toggleEdit(): void {
     this.isEditing = !this.isEditing;
 
     if (!this.isEditing) {
-      // Disable all controls
       this.patchFormWithExamData(this.exam!);
       this.disableFormControls();
     } else {
-      // Enable all controls
       this.enableFormControls();
     }
   }
 
   private disableFormControls(): void {
-    // Disable basic form controls
     this.examForm.get('name')?.disable();
     this.examForm.get('timeLimit')?.disable();
 
-    // Disable all question controls
     for (let i = 0; i < this.questions.length; i++) {
       const question = this.questions.at(i);
       question.get('question')?.disable();
       question.get('difficulty')?.disable();
 
-      // Disable all answer controls
       const answers = this.getAnswers(i);
       for (let j = 0; j < answers.length; j++) {
         answers.at(j).get('answer')?.disable();
         answers.at(j).get('isCorrect')?.disable();
       }
     }
+
+    this.examForm.markAsUntouched();
   }
 
   private enableFormControls(): void {
-    // Enable basic form controls
     this.examForm.get('name')?.enable();
     this.examForm.get('timeLimit')?.enable();
 
-    // Enable all question controls
     for (let i = 0; i < this.questions.length; i++) {
       const question = this.questions.at(i);
       question.get('question')?.enable();
       question.get('difficulty')?.enable();
 
-      // Enable all answer controls
       const answers = this.getAnswers(i);
       for (let j = 0; j < answers.length; j++) {
         answers.at(j).get('answer')?.enable();
@@ -238,10 +251,21 @@ export class ExamDetailsComponent implements OnInit {
         answers.length < this.MIN_ANSWERS ||
         answers.length > this.MAX_ANSWERS
       ) {
-        alert(
+        this.showErrorNotification(
           `Question ${i + 1} must have between ${this.MIN_ANSWERS} and ${
             this.MAX_ANSWERS
           } answers.`
+        );
+        isValid = false;
+        break;
+      }
+
+      const correctAnswers = answers.controls.filter(
+        (answer) => answer.get('isCorrect')?.value
+      );
+      if (correctAnswers.length !== 1) {
+        this.showErrorNotification(
+          `Question ${i + 1} must have exactly one correct answer.`
         );
         isValid = false;
         break;

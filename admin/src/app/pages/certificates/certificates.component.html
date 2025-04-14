@@ -7,12 +7,21 @@
 
     <div>
       <label for="certificateName">Certificate Name:</label>
-      <input type="text" id="certificateName" [(ngModel)]="certificateName" placeholder="Enter certificate name" required>
+      <input type="text" id="certificateName" [(ngModel)]="certificateName" placeholder="Enter certificate name"
+             minlength="3" #nameInput="ngModel" required>
+      <div class="error-message" *ngIf="nameInput.invalid && (nameInput.dirty || nameInput.touched)">
+        Certificate name must be at least 3 characters long
+      </div>
     </div>
 
     <div>
       <label for="certificateDescription">Certificate Description:</label>
-      <textarea id="certificateDescription" [(ngModel)]="certificateDescription" placeholder="Enter certificate description" required></textarea>
+      <textarea id="certificateDescription" [(ngModel)]="certificateDescription" placeholder="Enter certificate description"
+                #descInput="ngModel" [ngModel]="certificateDescription" (ngModelChange)="certificateDescription = $event"
+                (blur)="validateDescriptionOnBlur()" [ngModelOptions]="{standalone: true}" required></textarea>
+      <div class="error-message" *ngIf="!isDescriptionValid">
+        Certificate description must contain at least 5 words
+      </div>
     </div>
 
     <div>
@@ -42,11 +51,20 @@
       <h4>Edit Certificate</h4>
       <div>
         <label for="editName">Certificate Name:</label>
-        <input type="text" id="editName" [(ngModel)]="editName" placeholder="Enter certificate name" required>
+        <input type="text" id="editName" [(ngModel)]="editName" placeholder="Enter certificate name"
+               minlength="3" #editNameInput="ngModel" required>
+        <div class="error-message" *ngIf="editNameInput.invalid && (editNameInput.dirty || editNameInput.touched)">
+          Certificate name must be at least 3 characters long
+        </div>
       </div>
       <div>
         <label for="editDescription">Certificate Description:</label>
-        <textarea id="editDescription" [(ngModel)]="editDescription" placeholder="Enter certificate description" required></textarea>
+        <textarea id="editDescription" [(ngModel)]="editDescription" placeholder="Enter certificate description"
+                  #editDescInput="ngModel" [ngModel]="editDescription" (ngModelChange)="editDescription = $event"
+                  (blur)="validateEditDescriptionOnBlur()" [ngModelOptions]="{standalone: true}" required></textarea>
+        <div class="error-message" *ngIf="!isEditDescriptionValid">
+          Certificate description must contain at least 5 words
+        </div>
       </div>
       <div class="edit-actions">
         <button (click)="updateCertificate()"

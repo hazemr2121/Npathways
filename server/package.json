@@ -20,6 +20,7 @@
     "express": "^4.21.2",
     "file-type": "^20.4.1",
     "finial-iti-backend": "file:",
+    "handlebars": "^4.7.8",
     "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2",
     "jwt-decode": "^4.0.0",

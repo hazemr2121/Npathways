@@ -1,13 +1,25 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgModel } from '@angular/forms';
 import { Course } from '../../../services/course.service';
 import { Pathway } from '../../../services/pathway.service';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+
+// Custom validator function for minimum word count
+function hasMinimumWords(minWords: number) {
+  return (control: NgModel) => {
+    if (!control.value) {
+      return null;
+    }
+    const wordCount = control.value.trim().split(/\s+/).length;
+    return wordCount >= minWords ? null : { minWords: true };
+  };
+}
 
 @Component({
   selector: 'app-edit-pathway-dialog',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, MatSnackBarModule],
   template: `
     <div class="dialog-overlay" (click)="onClose()">
       <div class="dialog-content" (click)="$event.stopPropagation()">
@@ -26,9 +38,14 @@ import { Pathway } from '../../../services/pathway.service';
                 [(ngModel)]="pathway.name"
                 name="name"
                 required
+                minlength="3"
                 placeholder="Enter pathway name"
                 class="form-input"
+                (blur)="validateNameOnBlur()"
               />
+              <div class="error-message" *ngIf="!isNameValid">
+                Pathway name must be at least 3 characters long
+              </div>
             </div>
 
             <div class="form-group">
@@ -39,7 +56,11 @@ import { Pathway } from '../../../services/pathway.service';
                 name="description"
                 placeholder="Enter pathway description"
                 class="form-textarea"
+                (blur)="validateDescriptionOnBlur()"
               ></textarea>
+              <div class="error-message" *ngIf="!isDescriptionValid">
+                Description must contain at least 5 words
+              </div>
             </div>
 
             <div class="form-group">
@@ -63,7 +84,7 @@ import { Pathway } from '../../../services/pathway.service';
             </div>
 
             <div class="dialog-actions">
-              <button type="submit" class="btn btn-primary">Update Pathway</button>
+              <button type="submit" class="btn btn-primary" [disabled]="!isNameValid || !isDescriptionValid">Update Pathway</button>
               <button type="button" class="btn btn-secondary" (click)="onClose()">Cancel</button>
             </div>
           </form>
@@ -202,6 +223,26 @@ import { Pathway } from '../../../services/pathway.service';
     .btn:hover {
       opacity: 0.9;
     }
+
+    .error-message {
+      color: #dc3545;
+      font-size: 0.875rem;
+      margin-top: 0.25rem;
+      margin-bottom: 0.5rem;
+      display: block;
+    }
+
+    input.ng-invalid.ng-touched,
+    textarea.ng-invalid.ng-touched {
+      border-color: #dc3545;
+      background-color: #fff8f8;
+    }
+
+    input.ng-invalid.ng-touched:focus,
+    textarea.ng-invalid.ng-touched:focus {
+      border-color: #dc3545;
+      box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+    }
   `]
 })
 export class EditPathwayDialogComponent {
@@ -211,6 +252,10 @@ export class EditPathwayDialogComponent {
   @Output() save = new EventEmitter<Pathway>();
 
   selectedCourseIds: string[] = [];
+  isNameValid: boolean = true;
+  isDescriptionValid: boolean = true;
+
+  constructor(private snackBar: MatSnackBar) {}
 
   ngOnInit() {
     // Initialize selected courses from the pathway
@@ -222,6 +267,47 @@ export class EditPathwayDialogComponent {
       }
       return '';
     }).filter(id => id !== '') || [];
+
+    // Initialize validation states
+    this.validateNameOnBlur();
+    this.validateDescriptionOnBlur();
+  }
+
+  validateNameOnBlur(): void {
+    if (!this.pathway.name) {
+      this.isNameValid = true; // Don't show error if empty (required will handle that)
+      return;
+    }
+
+    this.isNameValid = this.pathway.name.length >= 3;
+
+    if (!this.isNameValid) {
+      this.snackBar.open('Pathway name must be at least 3 characters long', 'Close', {
+        duration: 3000,
+        panelClass: ['error-snackbar'],
+        verticalPosition: 'top',
+        horizontalPosition: 'right'
+      });
+    }
+  }
+
+  validateDescriptionOnBlur(): void {
+    if (!this.pathway.description) {
+      this.isDescriptionValid = true; // Don't show error if empty (required will handle that)
+      return;
+    }
+
+    const wordCount = this.pathway.description.trim().split(/\s+/).length;
+    this.isDescriptionValid = wordCount >= 5;
+
+    if (!this.isDescriptionValid) {
+      this.snackBar.open('Description must contain at least 5 words', 'Close', {
+        duration: 3000,
+        panelClass: ['error-snackbar'],
+        verticalPosition: 'top',
+        horizontalPosition: 'right'
+      });
+    }
   }
 
   isCourseSelected(courseId: string): boolean {
@@ -238,6 +324,14 @@ export class EditPathwayDialogComponent {
   }
 
   onSubmit(): void {
+    // Validate before saving
+    this.validateNameOnBlur();
+    this.validateDescriptionOnBlur();
+
+    if (!this.isNameValid || !this.isDescriptionValid) {
+      return;
+    }
+
     const updatedPathway = {
       ...this.pathway,
       courses: this.selectedCourseIds as any[] // Type assertion to match the API expectation

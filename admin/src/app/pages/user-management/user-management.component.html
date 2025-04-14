@@ -57,7 +57,6 @@
       </div>
     </div>
 
-
     <div class="filters-row">
       <div class="search-box">
         <i class="bi bi-search"></i>
@@ -75,7 +74,7 @@
       >
         Create Admin
       </button>
-            <button
+      <button
         style="width: auto"
         *ngIf="selectedTab === 'instructors'"
         class="create-admin-btn"
@@ -141,12 +140,12 @@
                   <i class="bi bi-pencil-fill"></i>
                   <span>Edit</span>
                 </button>
-                <button class="dropdown-item" (click)="suspendUser(user)">
+                <!-- <button class="dropdown-item" (click)="suspendUser(user)">
                   <i class="bi bi-ban"></i>
                   <span>{{
                     user.status === "Suspended" ? "Activate" : "Suspend"
                   }}</span>
-                </button>
+                </button> -->
                 <button
                   class="dropdown-item delete"
                   (click)="confirmDeleteUser(user)"
@@ -210,12 +209,21 @@
             class="form-control"
             [class.is-invalid]="firstName?.invalid && firstName?.touched"
           />
-          <div class="invalid-feedback" *ngIf="firstName?.invalid && firstName?.touched">
+          <div
+            class="invalid-feedback"
+            *ngIf="firstName?.invalid && firstName?.touched"
+          >
             <div *ngIf="firstName?.errors">
-              <div *ngIf="firstName?.errors?.['required']">First Name is required</div>
-              <div *ngIf="firstName?.errors?.['pattern']">First name must contain only letters</div>
-              <div *ngIf="firstName?.errors?.['minlength'] || firstName?.errors?.['maxlength']">
-                First name must be 2-15 characters long
+              <div *ngIf="firstName?.errors?.['required']">
+                First Name is required
+              </div>
+              <div *ngIf="firstName?.errors?.['pattern']">
+                First name must contain only letters
+              </div>
+              <div
+                *ngIf="firstName?.errors?.['minlength'] || firstName?.errors?.['maxlength']"
+              >
+                First name must be 3-15 characters long
               </div>
             </div>
           </div>
@@ -230,11 +238,20 @@
             class="form-control"
             [class.is-invalid]="lastName?.invalid && lastName?.touched"
           />
-          <div class="invalid-feedback" *ngIf="lastName?.invalid && lastName?.touched">
+          <div
+            class="invalid-feedback"
+            *ngIf="lastName?.invalid && lastName?.touched"
+          >
             <div *ngIf="lastName?.errors">
-              <div *ngIf="lastName?.errors?.['required']">Last Name is required</div>
-              <div *ngIf="lastName?.errors?.['pattern']">Last name must contain only letters</div>
-              <div *ngIf="lastName?.errors?.['minlength'] || lastName?.errors?.['maxlength']">
+              <div *ngIf="lastName?.errors?.['required']">
+                Last Name is required
+              </div>
+              <div *ngIf="lastName?.errors?.['pattern']">
+                Last name must contain only letters
+              </div>
+              <div
+                *ngIf="lastName?.errors?.['minlength'] || lastName?.errors?.['maxlength']"
+              >
                 Last name must be 2-15 characters long
               </div>
             </div>
@@ -248,12 +265,19 @@
             id="email"
             formControlName="email"
             class="form-control"
-            [class.is-invalid]="(email?.invalid && email?.touched) || emailError"
+            [class.is-invalid]="
+              (email?.invalid && email?.touched) || emailError
+            "
           />
-          <div class="invalid-feedback" *ngIf="(email?.invalid && email?.touched) || emailError">
+          <div
+            class="invalid-feedback"
+            *ngIf="(email?.invalid && email?.touched) || emailError"
+          >
             <div *ngIf="email?.errors">
               <div *ngIf="email?.errors?.['required']">Email is required</div>
-              <div *ngIf="email?.errors?.['pattern']">Email must be a valid address</div>
+              <div *ngIf="email?.errors?.['pattern']">
+                Email must be a valid address
+              </div>
             </div>
             <div *ngIf="emailError" class="text-danger">
               {{ emailError }}
@@ -270,20 +294,36 @@
             class="form-control"
             [class.is-invalid]="password?.invalid && password?.touched"
           />
-          <div class="invalid-feedback" *ngIf="password?.invalid && password?.touched">
-            <div *ngIf="password?.errors">
-              <div *ngIf="password?.errors?.['required']">Password is required</div>
-              <div *ngIf="password?.errors?.['pattern']">
-                Password must contain at least 8 characters, including an
-                uppercase letter, a lowercase letter, a number, and a special
-                character.
+          <div
+            class="invalid-feedback"
+            *ngIf="password?.invalid && password?.touched"
+          >
+            <div *ngIf="password?.errors as errors">
+              <div *ngIf="errors['required']">Password is required</div>
+              <div *ngIf="errors['minLength']">
+                Password must be at least 8 characters
+              </div>
+              <div *ngIf="errors['uppercase']">
+                Password must contain at least one uppercase letter
+              </div>
+              <div *ngIf="errors['lowercase']">
+                Password must contain at least one lowercase letter
+              </div>
+              <div *ngIf="errors['number']">
+                Password must contain at least one number
+              </div>
+              <div *ngIf="errors['specialChar']">
+                Password must contain at least one special character ($!%*?&)
               </div>
             </div>
           </div>
-                <div class="password-toggle">
+          <div class="password-toggle">
             <a href="javascript:void(0)" (click)="togglePasswordVisibility()">
-              <i class="fas" [class]="showPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
-              {{ showPassword ? 'Hide' : 'Show' }} Password
+              <i
+                class="fas"
+                [class]="showPassword ? 'fa-eye-slash' : 'fa-eye'"
+              ></i>
+              {{ showPassword ? "Hide" : "Show" }} Password
             </a>
           </div>
         </div>
@@ -296,7 +336,7 @@
           >
             Cancel
           </button>
-          <button type="submit" [disabled]="createAdminForm.invalid" class="create-btn">
+          <button type="button" class="create-btn" (click)="createAdmin()">
             Create Admin
           </button>
         </div>
@@ -304,7 +344,6 @@
     </div>
   </div>
 </div>
-
 
 <!-- Create Instructors Modal -->
 <div class="modal" *ngIf="showCreateInstructorModal">
@@ -316,7 +355,11 @@
       </button>
     </div>
     <div class="modal-body">
-      <form [formGroup]="createInstructorForm" (ngSubmit)="createInstructor()" novalidate>
+      <form
+        [formGroup]="createInstructorForm"
+        (ngSubmit)="createInstructor()"
+        novalidate
+      >
         <div class="form-group">
           <label for="firstName">First Name</label>
           <input
@@ -324,14 +367,25 @@
             id="firstName"
             formControlName="firstName"
             class="form-control"
-            [class.is-invalid]="firstNameInstructor?.invalid && firstNameInstructor?.touched"
+            [class.is-invalid]="
+              firstNameInstructor?.invalid && firstNameInstructor?.touched
+            "
           />
-          <div class="invalid-feedback" *ngIf="firstNameInstructor?.invalid && firstNameInstructor?.touched">
+          <div
+            class="invalid-feedback"
+            *ngIf="firstNameInstructor?.invalid && firstNameInstructor?.touched"
+          >
             <div *ngIf="firstNameInstructor?.errors">
-              <div *ngIf="firstNameInstructor?.errors?.['required']">First Name is required</div>
-              <div *ngIf="firstNameInstructor?.errors?.['pattern']">First name must contain only letters</div>
-              <div *ngIf="firstNameInstructor?.errors?.['minlength'] || firstNameInstructor?.errors?.['maxlength']">
-                First name must be 2-15 characters long
+              <div *ngIf="firstNameInstructor?.errors?.['required']">
+                First Name is required
+              </div>
+              <div *ngIf="firstNameInstructor?.errors?.['pattern']">
+                First name must contain only letters
+              </div>
+              <div
+                *ngIf="firstNameInstructor?.errors?.['minlength'] || firstNameInstructor?.errors?.['maxlength']"
+              >
+                First name must be 3-15 characters long
               </div>
             </div>
           </div>
@@ -344,13 +398,24 @@
             id="lastName"
             formControlName="lastName"
             class="form-control"
-            [class.is-invalid]="lastNameInstructor?.invalid && lastNameInstructor?.touched"
+            [class.is-invalid]="
+              lastNameInstructor?.invalid && lastNameInstructor?.touched
+            "
           />
-          <div class="invalid-feedback" *ngIf="lastNameInstructor?.invalid && lastNameInstructor?.touched">
+          <div
+            class="invalid-feedback"
+            *ngIf="lastNameInstructor?.invalid && lastNameInstructor?.touched"
+          >
             <div *ngIf="lastNameInstructor?.errors">
-              <div *ngIf="lastNameInstructor?.errors?.['required']">Last Name is required</div>
-              <div *ngIf="lastNameInstructor?.errors?.['pattern']">Last name must contain only letters</div>
-              <div *ngIf="lastNameInstructor?.errors?.['minlength'] || lastNameInstructor?.errors?.['maxlength']">
+              <div *ngIf="lastNameInstructor?.errors?.['required']">
+                Last Name is required
+              </div>
+              <div *ngIf="lastNameInstructor?.errors?.['pattern']">
+                Last name must contain only letters
+              </div>
+              <div
+                *ngIf="lastNameInstructor?.errors?.['minlength'] || lastNameInstructor?.errors?.['maxlength']"
+              >
                 Last name must be 2-15 characters long
               </div>
             </div>
@@ -364,12 +429,25 @@
             id="email"
             formControlName="email"
             class="form-control"
-            [class.is-invalid]="(emailInstructor?.invalid && emailInstructor?.touched) || emailError"
+            [class.is-invalid]="
+              (emailInstructor?.invalid && emailInstructor?.touched) ||
+              emailError
+            "
           />
-          <div class="invalid-feedback" *ngIf="(emailInstructor?.invalid && emailInstructor?.touched) || emailError">
+          <div
+            class="invalid-feedback"
+            *ngIf="
+              (emailInstructor?.invalid && emailInstructor?.touched) ||
+              emailError
+            "
+          >
             <div *ngIf="emailInstructor?.errors">
-              <div *ngIf="emailInstructor?.errors?.['required']">Email is required</div>
-              <div *ngIf="emailInstructor?.errors?.['pattern']">Email must be a valid address</div>
+              <div *ngIf="emailInstructor?.errors?.['required']">
+                Email is required
+              </div>
+              <div *ngIf="emailInstructor?.errors?.['pattern']">
+                Email must be a valid address
+              </div>
             </div>
             <div *ngIf="emailError" class="text-danger">
               {{ emailError }}
@@ -384,22 +462,40 @@
             id="password"
             formControlName="password"
             class="form-control"
-            [class.is-invalid]="passwordInstructor?.invalid && passwordInstructor?.touched"
+            [class.is-invalid]="
+              passwordInstructor?.invalid && passwordInstructor?.touched
+            "
           />
-          <div class="invalid-feedback" *ngIf="passwordInstructor?.invalid && passwordInstructor?.touched">
-            <div *ngIf="passwordInstructor?.errors">
-              <div *ngIf="passwordInstructor?.errors?.['required']">Password is required</div>
-              <div *ngIf="passwordInstructor?.errors?.['pattern']">
-                Password must contain at least 8 characters, including an
-                uppercase letter, a lowercase letter, a number, and a special
-                character.
+          <div
+            class="invalid-feedback"
+            *ngIf="passwordInstructor?.invalid && passwordInstructor?.touched"
+          >
+            <div *ngIf="passwordInstructor?.errors as errors">
+              <div *ngIf="errors['required']">Password is required</div>
+              <div *ngIf="errors['minLength']">
+                Password must be at least 8 characters
+              </div>
+              <div *ngIf="errors['uppercase']">
+                Password must contain at least one uppercase letter
+              </div>
+              <div *ngIf="errors['lowercase']">
+                Password must contain at least one lowercase letter
+              </div>
+              <div *ngIf="errors['number']">
+                Password must contain at least one number
+              </div>
+              <div *ngIf="errors['specialChar']">
+                Password must contain at least one special character ($!%*?&)
               </div>
             </div>
           </div>
           <div class="password-toggle">
             <a href="javascript:void(0)" (click)="togglePasswordVisibility()">
-              <i class="fas" [class]="showPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
-              {{ showPassword ? 'Hide' : 'Show' }} Password
+              <i
+                class="fas"
+                [class]="showPassword ? 'fa-eye-slash' : 'fa-eye'"
+              ></i>
+              {{ showPassword ? "Hide" : "Show" }} Password
             </a>
           </div>
         </div>
@@ -412,7 +508,7 @@
           >
             Cancel
           </button>
-          <button type="submit" [disabled]="createInstructorForm.invalid" class="create-btn">
+          <button type="button" class="create-btn" (click)="createInstructor()">
             Create Instructor
           </button>
         </div>
@@ -420,7 +516,6 @@
     </div>
   </div>
 </div>
-
 
 <!-- Delete Confirmation Modal -->
 <div
@@ -469,95 +564,163 @@
 </div>
 
 <!-- Edit User Modal -->
-<div class="modal fade show d-block" tabindex="-1" role="dialog" style="background-color: rgba(0, 0, 0, 0.5)" *ngIf="showEditModal">
+<div
+  class="modal fade show d-block"
+  tabindex="-1"
+  role="dialog"
+  style="background-color: rgba(0, 0, 0, 0.5)"
+  *ngIf="showEditModal"
+>
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">Edit User</h5>
-        <button type="button" class="btn-close" aria-label="Close" (click)="showEditModal = false"></button>
+        <button
+          type="button"
+          class="btn-close"
+          aria-label="Close"
+          (click)="showEditModal = false"
+        ></button>
       </div>
       <div class="modal-body">
         <form #editForm="ngForm" (ngSubmit)="updateUser(editForm)">
           <div class="form-group mb-3">
             <label for="editFirstName">First Name (Optional)</label>
-            <input 
-              type="text" 
-              id="editFirstName" 
-              [(ngModel)]="userToEdit.firstName" 
-              name="firstName" 
-              class="form-control" 
+            <input
+              type="text"
+              id="editFirstName"
+              [(ngModel)]="userToEdit.firstName"
+              name="firstName"
+              class="form-control"
               #firstName="ngModel"
-              pattern="[a-zA-Z\s]*"
-              maxlength="50"
+              pattern="^[A-Za-z]+$"
+              maxlength="15"
+              minlength="3"
+            />
+            <div
+              *ngIf="
+                firstName.value &&
+                firstName.invalid &&
+                (firstName.dirty || firstName.touched)
+              "
+              class="error-message text-danger mt-1"
             >
-            <div *ngIf="firstName.touched && firstName.invalid" class="error-message text-danger mt-1">
-              <div *ngIf="firstName.errors?.['pattern']">First Name can only contain letters and spaces.</div>
-              <div *ngIf="firstName.errors?.['maxlength']">First Name cannot exceed 50 characters.</div>
+              <div *ngIf="firstName.errors?.['pattern']">
+                First Name can only contain letters and spaces.
+              </div>
+              <div *ngIf="firstName.errors?.['maxlength']">
+                First Name cannot exceed 15 characters.
+              </div>
+              <div *ngIf="firstName.errors?.['minlength']">
+                First Name cannot be less than 3 letters.
+              </div>
             </div>
           </div>
 
           <div class="form-group mb-3">
             <label for="editLastName">Last Name (Optional)</label>
-            <input 
-              type="text" 
-              id="editLastName" 
-              [(ngModel)]="userToEdit.lastName" 
-              name="lastName" 
-              class="form-control" 
+            <input
+              type="text"
+              id="editLastName"
+              [(ngModel)]="userToEdit.lastName"
+              name="lastName"
+              class="form-control"
               #lastName="ngModel"
-              pattern="[a-zA-Z\s]*"
-              maxlength="50"
+              pattern="^[A-Za-z]+$"
+              maxlength="15"
+              minlength="3"
+            />
+            <div
+              *ngIf="
+                lastName.value &&
+                lastName.invalid &&
+                (lastName.dirty || lastName.touched)
+              "
+              class="error-message text-danger mt-1"
             >
-            <div *ngIf="lastName.touched && lastName.invalid" class="error-message text-danger mt-1">
-              <div *ngIf="lastName.errors?.['pattern']">Last Name can only contain letters and spaces.</div>
-              <div *ngIf="lastName.errors?.['maxlength']">Last Name cannot exceed 50 characters.</div>
+              <div *ngIf="lastName.errors?.['pattern']">
+                Last Name can only contain letters and spaces.
+              </div>
+              <div *ngIf="lastName.errors?.['maxlength']">
+                Last Name cannot exceed 15 characters.
+              </div>
+              <div *ngIf="lastName.errors?.['minlength']">
+                Last Name cannot be less than 3 letters.
+              </div>
             </div>
           </div>
 
           <div class="form-group mb-3">
             <label for="editEmail">Email (Optional)</label>
-            <input 
-              type="email" 
-              id="editEmail" 
-              [(ngModel)]="userToEdit.email" 
-              name="email" 
-              class="form-control" 
+            <input
+              type="email"
+              id="editEmail"
+              [(ngModel)]="userToEdit.email"
+              name="email"
+              class="form-control"
               #email="ngModel"
               pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
               maxlength="100"
+            />
+            <div
+              *ngIf="email.touched && email.invalid"
+              class="error-message text-danger mt-1"
             >
-            <div *ngIf="email.touched && email.invalid" class="error-message text-danger mt-1">
-              <div *ngIf="email.errors?.['pattern']">Please enter a valid email address.</div>
-              <div *ngIf="email.errors?.['maxlength']">Email cannot exceed 100 characters.</div>
+              <div *ngIf="email.errors?.['pattern']">
+                Please enter a valid email address.
+              </div>
+              <div *ngIf="email.errors?.['maxlength']">
+                Email cannot exceed 100 characters.
+              </div>
             </div>
           </div>
 
           <div class="form-group mb-3">
             <label for="editPassword">New Password (Optional)</label>
-            <input 
-              type="password" 
-              id="editPassword" 
-              [(ngModel)]="userToEdit.password" 
-              name="password" 
-              class="form-control" 
-              #password="ngModel" 
+            <input
+              type="password"
+              id="editPassword"
+              [(ngModel)]="userToEdit.password"
+              name="password"
+              class="form-control"
+              #password="ngModel"
               minlength="6"
               maxlength="50"
+            />
+            <div
+              *ngIf="password.touched && password.invalid"
+              class="error-message text-danger mt-1"
             >
-            <div *ngIf="password.touched && password.invalid" class="error-message text-danger mt-1">
-              <div *ngIf="password.errors?.['minlength']">Password must be at least 6 characters long.</div>
-              <div *ngIf="password.errors?.['maxlength']">Password cannot exceed 50 characters.</div>
+              <div *ngIf="password.errors?.['minlength']">
+                Password must be at least 6 characters long.
+              </div>
+              <div *ngIf="password.errors?.['maxlength']">
+                Password cannot exceed 50 characters.
+              </div>
             </div>
-            <small class="text-muted">Leave empty to keep current password</small>
+            <small class="text-muted"
+              >Leave empty to keep current password</small
+            >
           </div>
 
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" (click)="showEditModal = false">Cancel</button>
-            <button type="submit" class="btn btn-primary" [disabled]="editForm.invalid">Save Changes</button>
+            <button
+              type="button"
+              class="btn btn-secondary"
+              (click)="showEditModal = false"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="btn btn-primary"
+              [disabled]="editForm.invalid"
+            >
+              Save Changes
+            </button>
           </div>
         </form>
       </div>
     </div>
   </div>
 </div>
-

@@ -12,11 +12,37 @@
       <h2>Exam Details</h2>
       <div class="form-group">
         <label>Exam Name</label>
-        <input type="text" class="dark-input" formControlName="name" />
+        <input
+          type="text"
+          class="dark-input"
+          formControlName="name"
+          [class.is-invalid]="examForm.get('name')?.invalid && examForm.get('name')?.touched && isEditing"
+        />
+        <div
+          class="invalid-feedback"
+          *ngIf="examForm.get('name')?.invalid && examForm.get('name')?.touched && isEditing"
+        >
+          <span *ngIf="examForm.get('name')?.errors?.['required']">Exam name is required.</span>
+          <span *ngIf="examForm.get('name')?.errors?.['minlength']">Exam name must be at least 3 characters.</span>
+        </div>
       </div>
       <div class="form-group">
         <label>Time Limit (minutes)</label>
-        <input type="number" class="dark-input" formControlName="timeLimit" />
+        <input
+          type="number"
+          class="dark-input"
+          formControlName="timeLimit"
+          min="1"
+          [class.is-invalid]="examForm.get('timeLimit')?.invalid && examForm.get('timeLimit')?.touched && isEditing"
+        />
+        <div
+          class="invalid-feedback"
+          *ngIf="examForm.get('timeLimit')?.invalid && examForm.get('timeLimit')?.touched && isEditing"
+        >
+          <span *ngIf="examForm.get('timeLimit')?.errors?.['required']">Time limit is required.</span>
+          <span *ngIf="examForm.get('timeLimit')?.errors?.['min']">Time limit cannot be 0 or negative.</span>
+          <span *ngIf="examForm.get('timeLimit')?.errors?.['pattern']">Please enter a valid whole number.</span>
+        </div>
       </div>
     </div>
 
@@ -64,16 +90,38 @@
 
           <div class="form-group">
             <label>Question Text</label>
-            <input type="text" class="dark-input" formControlName="question" />
+            <input
+              type="text"
+              class="dark-input"
+              formControlName="question"
+              [class.is-invalid]="questions.at(i).get('question')?.invalid && questions.at(i).get('question')?.touched && isEditing"
+            />
+            <div
+              class="invalid-feedback"
+              *ngIf="questions.at(i).get('question')?.invalid && questions.at(i).get('question')?.touched && isEditing"
+            >
+              <span *ngIf="questions.at(i).get('question')?.errors?.['required']">Question text is required.</span>
+              <span *ngIf="questions.at(i).get('question')?.errors?.['minlength']">Question must be at least 5 characters.</span>
+            </div>
           </div>
 
           <div class="form-group">
             <label>Difficulty</label>
-            <select class="dark-input" formControlName="difficulty">
+            <select
+              class="dark-input"
+              formControlName="difficulty"
+              [class.is-invalid]="questions.at(i).get('difficulty')?.invalid && questions.at(i).get('difficulty')?.touched && isEditing"
+            >
               <option *ngFor="let diff of difficulties" [value]="diff">
                 {{ diff | titlecase }}
               </option>
             </select>
+            <div
+              class="invalid-feedback"
+              *ngIf="questions.at(i).get('difficulty')?.invalid && questions.at(i).get('difficulty')?.touched && isEditing"
+            >
+              <span *ngIf="questions.at(i).get('difficulty')?.errors?.['required']">Difficulty is required.</span>
+            </div>
           </div>
 
           <div formArrayName="answers" class="answers-section">
@@ -89,10 +137,23 @@
                   class="dark-input"
                   formControlName="answer"
                   placeholder="Answer text"
+                  [class.is-invalid]="getAnswers(i).at(j).get('answer')?.invalid && getAnswers(i).at(j).get('answer')?.touched && isEditing"
                 />
+                <div
+                  class="invalid-feedback"
+                  *ngIf="getAnswers(i).at(j).get('answer')?.invalid && getAnswers(i).at(j).get('answer')?.touched && isEditing"
+                >
+                  <span *ngIf="getAnswers(i).at(j).get('answer')?.errors?.['required']">Answer text is required.</span>
+                  <span *ngIf="getAnswers(i).at(j).get('answer')?.errors?.['minlength']">Answer must be at least 1 character.</span>
+                </div>
                 <div class="answer-actions">
                   <label class="checkbox-container">
-                    <input type="checkbox" formControlName="isCorrect" />
+                    <input
+                      type="checkbox"
+                      formControlName="isCorrect"
+                      (change)="setCorrectAnswer(i, j)"
+                      [disabled]="!isEditing"
+                    />
                     <span class="checkmark"></span>
                     Correct
                   </label>
@@ -108,7 +169,7 @@
               </div>
             </div>
             <button
-              *ngIf="isEditing"
+              *ngIf="isEditing && getAnswers(i).length < MAX_ANSWERS"
               type="button"
               class="btn btn-outline-primary"
               (click)="addAnswer(i)"

@@ -2,11 +2,16 @@ import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CoursesService, Course } from '../../../services/course.service';
-import { InstructorService, Instructor } from '../../../services/instructor.service';
+import {
+  InstructorService,
+  Instructor,
+} from '../../../services/instructor.service';
 
 interface Lesson {
   name: string;
   duration: number;
+  description?: string;
+  downloadLink?: string;
   _id?: string;
 }
 
@@ -17,7 +22,14 @@ interface ValidationErrors {
   discount?: string;
   image?: string;
   instructors?: string;
-  lessons?: { [key: number]: { name?: string; duration?: string } };
+  lessons?: {
+    [key: number]: {
+      name?: string;
+      duration?: string;
+      description?: string;
+      downloadLink?: string;
+    };
+  };
 }
 
 @Component({
@@ -40,7 +52,7 @@ export class EditCourseDialogComponent implements OnInit {
     status: 'unpublished',
     price: 0,
     discount: 0,
-    category: ''
+    category: '',
   };
 
   showDialog = false;
@@ -70,39 +82,48 @@ export class EditCourseDialogComponent implements OnInit {
       error: (error) => {
         console.error('Error loading instructors:', error);
         this.error = 'Failed to load instructors. Please try again.';
-      }
+      },
     });
   }
 
   getInstructorName(instructorId: string): string {
-    const instructor = this.instructors.find(i => i._id === instructorId);
+    const instructor = this.instructors.find((i) => i._id === instructorId);
     return instructor ? `${instructor.firstName} ${instructor.lastName}` : '';
   }
 
   getAvailableInstructors(): Instructor[] {
-    return this.instructors.filter(instructor => instructor._id && !this.selectedInstructors.includes(instructor._id));
+    return this.instructors.filter(
+      (instructor) =>
+        instructor._id && !this.selectedInstructors.includes(instructor._id)
+    );
   }
 
   addInstructor() {
-    if (this.newInstructor && !this.selectedInstructors.includes(this.newInstructor)) {
+    if (
+      this.newInstructor &&
+      !this.selectedInstructors.includes(this.newInstructor)
+    ) {
       this.selectedInstructors.push(this.newInstructor);
       this.newInstructor = '';
     }
   }
 
   removeInstructor(instructorId: string) {
-    this.selectedInstructors = this.selectedInstructors.filter(id => id !== instructorId);
+    this.selectedInstructors = this.selectedInstructors.filter(
+      (id) => id !== instructorId
+    );
   }
 
   onImageSelected(event: Event) {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
       const file = input.files[0];
-      
+
       // Check file type
       const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
       if (!validTypes.includes(file.type)) {
-        this.validationErrors.image = 'Please select a valid image file (PNG, JPEG, JPG, or WEBP)';
+        this.validationErrors.image =
+          'Please select a valid image file (PNG, JPEG, JPG, or WEBP)';
         input.value = ''; // Clear the input
         this.imagePreview = null;
         this.courseImage = null;
@@ -121,7 +142,7 @@ export class EditCourseDialogComponent implements OnInit {
 
       this.courseImage = file;
       this.validationErrors.image = undefined;
-      
+
       // Create preview URL
       const reader = new FileReader();
       reader.onload = () => {
@@ -134,7 +155,9 @@ export class EditCourseDialogComponent implements OnInit {
   addLesson() {
     this.course.lessons.push({
       name: '',
-      duration: 30
+      duration: 30,
+      description: '',
+      downloadLink: '',
     });
   }
 
@@ -151,7 +174,8 @@ export class EditCourseDialogComponent implements OnInit {
       this.validationErrors.name = 'Course name is required';
       isValid = false;
     } else if (this.course.name.trim().length < 3) {
-      this.validationErrors.name = 'Course name must be at least 3 characters long';
+      this.validationErrors.name =
+        'Course name must be at least 3 characters long';
       isValid = false;
     }
 
@@ -160,49 +184,60 @@ export class EditCourseDialogComponent implements OnInit {
       this.validationErrors.description = 'Course description is required';
       isValid = false;
     } else if (this.course.description.trim().length < 10) {
-      this.validationErrors.description = 'Description must be at least 10 characters long';
-      isValid = false;
-    }
-
-    // Validate price
-    if (this.course.price !== undefined && this.course.price < 0) {
-      this.validationErrors.price = 'Price cannot be negative';
-      isValid = false;
-    }
-
-    // Validate discount
-    if (this.course.discount !== undefined) {
-      if (this.course.discount < 0) {
-        this.validationErrors.discount = 'Discount cannot be negative';
-        isValid = false;
-      } else if (this.course.discount > 100) {
-        this.validationErrors.discount = 'Discount cannot be more than 100%';
-        isValid = false;
-      }
-    }
-
-    // Validate instructors
-    if (this.selectedInstructors.length === 0) {
-      this.validationErrors.instructors = 'At least one instructor is required';
+      this.validationErrors.description =
+        'Description must be at least 10 characters long';
       isValid = false;
     }
 
     // Validate lessons
     if (this.course.lessons.length === 0) {
-      this.validationErrors.lessons = { 0: { name: 'At least one lesson is required' } };
+      this.validationErrors.lessons = {
+        0: { name: 'At least one lesson is required' },
+      };
       isValid = false;
     } else {
       this.course.lessons.forEach((lesson, index) => {
+        this.validationErrors.lessons = this.validationErrors.lessons || {};
+        this.validationErrors.lessons[index] =
+          this.validationErrors.lessons[index] || {};
+
+        // Validate lesson name
         if (!lesson.name.trim()) {
-          this.validationErrors.lessons = this.validationErrors.lessons || {};
-          this.validationErrors.lessons[index] = this.validationErrors.lessons[index] || {};
           this.validationErrors.lessons[index].name = 'Lesson name is required';
           isValid = false;
+        } else if (lesson.name.trim().length < 2) {
+          this.validationErrors.lessons[index].name =
+            'Lesson name must be at least 2 characters long';
+          isValid = false;
         }
-        if (typeof lesson.duration === 'number' && lesson.duration <= 0) {
-          this.validationErrors.lessons = this.validationErrors.lessons || {};
-          this.validationErrors.lessons[index] = this.validationErrors.lessons[index] || {};
-          this.validationErrors.lessons[index].duration = 'Duration must be greater than 0';
+
+        // Validate duration
+        if ((lesson?.duration ?? 0) <= 0) {
+          this.validationErrors.lessons[index].duration =
+            'Duration must be greater than 0';
+          isValid = false;
+        }
+
+        // Validate description
+        if (!lesson.description || !lesson.description.trim()) {
+          this.validationErrors.lessons[index].description =
+            'Lesson description is required';
+          isValid = false;
+        } else if (lesson.description.trim().length < 5) {
+          this.validationErrors.lessons[index].description =
+            'Lesson description must be at least 5 characters long';
+          isValid = false;
+        }
+
+        // Validate download link
+        const downloadLinkPattern = /^https?:\/\/.+/;
+        if (!lesson.downloadLink || !lesson.downloadLink.trim()) {
+          this.validationErrors.lessons[index].downloadLink =
+            'Download link is required';
+          isValid = false;
+        } else if (!downloadLinkPattern.test(lesson.downloadLink.trim())) {
+          this.validationErrors.lessons[index].downloadLink =
+            'Download link must be a valid URL (http/https)';
           isValid = false;
         }
       });
@@ -214,9 +249,11 @@ export class EditCourseDialogComponent implements OnInit {
   openDialog(course: Course) {
     this.course = { ...course };
     this.imagePreview = course.image || null;
-    this.selectedInstructors = course.instructors.map(instructor => 
-      typeof instructor === 'string' ? instructor : instructor._id || ''
-    ).filter(Boolean);
+    this.selectedInstructors = course.instructors
+      .map((instructor) =>
+        typeof instructor === 'string' ? instructor : instructor._id || ''
+      )
+      .filter(Boolean);
     this.showDialog = true;
     this.error = null;
     this.validationErrors = {};
@@ -262,19 +299,25 @@ export class EditCourseDialogComponent implements OnInit {
 
       // Add lessons - only include name and duration
       const validLessons = this.course.lessons
-        .filter(lesson => lesson.name.trim())
-        .map(lesson => ({
+        .filter((lesson) => lesson.name.trim())
+        .map((lesson) => ({
           name: lesson.name.trim(),
-          duration: lesson.duration
+          duration: lesson.duration,
+          description: lesson.description?.trim() || '',
+          downloadLink: lesson.downloadLink?.trim() || '',
         }));
+
       formData.append('lessons', JSON.stringify(validLessons));
 
-      await this.coursesService.updateCourse(this.course._id, formData).toPromise();
+      await this.coursesService
+        .updateCourse(this.course._id, formData)
+        .toPromise();
       this.courseUpdated.emit();
       this.closeDialog();
     } catch (error: any) {
       console.error('Error updating course:', error);
-      this.error = error.error?.message || 'Failed to update course. Please try again.';
+      this.error =
+        error.error?.message || 'Failed to update course. Please try again.';
     } finally {
       this.isSubmitting = false;
     }
@@ -296,7 +339,7 @@ export class EditCourseDialogComponent implements OnInit {
       status: 'unpublished',
       price: 0,
       discount: 0,
-      category: ''
+      category: '',
     };
     this.selectedInstructors = [];
     this.newInstructor = '';
