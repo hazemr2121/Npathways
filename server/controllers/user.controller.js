@@ -47,7 +47,7 @@ const userController = {
    
       return res.status(201).send({
         message: "Account Created Successfully",
-      });
+       });
     } catch (error) {
       console.error("New User Error:", error);
       return res.status(500).send({
