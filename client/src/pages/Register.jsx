@@ -29,11 +29,11 @@ const validationSchema = Yup.object().shape({
     .max(30, "Last name should not exceed 30 characters")
     .required("Please enter your last name"),
   email: Yup.string()
-    .email("Please enter a valid email format")
-    .required("Email address is required")
+    .email("Invalid email address")
+    .required("Email is required")
     .matches(
       /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-      "Email format is invalid (e.g., example@domain.com)"
+      "Please enter a valid email address Ex: example@domain.com"
     ),
   password: Yup.string()
     .min(8, "Password must be at least 8 characters long")
