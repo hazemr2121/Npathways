@@ -79,10 +79,7 @@ export class UserManagementComponent implements OnInit {
       ],
       password: [
         '',
-        [
-          Validators.required,
-          CustomValidators.passwordStrengthValidator(),
-        ],
+        [Validators.required, CustomValidators.passwordStrengthValidator()],
       ],
     });
 
@@ -99,18 +96,18 @@ export class UserManagementComponent implements OnInit {
       ],
       password: [
         '',
-        [
-          Validators.required,
-          CustomValidators.passwordStrengthValidator(),
-        ],
+        [Validators.required, CustomValidators.passwordStrengthValidator()],
       ],
     });
   }
 
   ngOnInit(): void {
     // Load users data
+    console.log('started in on init');
+
     this.loadUsers();
 
+    console.log('started in after call load users');
     // When query params change, we update the page number
     this.route.queryParams.subscribe((params) => {
       const page = +params['page'] || 1;

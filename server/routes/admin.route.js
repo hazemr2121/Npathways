@@ -75,9 +75,9 @@ router.post(
 // /////////////////Function Use Admin  ///////////////////////////////////////
 router.get(
   "/AllInstructor",
-  // protectRoutes,
-  // allowTo("admin"),
-  authenticationInstructor,
+  protectRoutes,
+  allowTo("admin"),
+  // authenticationInstructor,
   AdminControlller.getAllInstructors
 );
 router.get(

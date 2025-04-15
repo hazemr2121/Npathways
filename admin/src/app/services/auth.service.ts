@@ -99,8 +99,8 @@ export class AuthService {
 
   // Check if the user has admin role
   isAdmin(): boolean {
-    const user = this.getUserRole() === 'admin';
-    return user;
+    return this.getUserRole() === 'admin';
+     
   }
   isInstructor(): boolean {
     return this.getUserRole() === 'instructor';
