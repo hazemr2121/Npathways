@@ -36,7 +36,16 @@ router.delete(
 );
 router.get("/getStudentsInCourse/:id", CourseController.getStudentsInCourse);
 // getAllStudentsInCourse
-router.get("/getStudentsInCourse/:id", CourseController.getAllStudentsInCourse);
+router.get(
+  "/getStudentsCountInCourse/:id",
+  CourseController.getAllStudentsInCourse
+);
+
+// getcoursesByInstructorId
+router.get(
+  "/getcoursesByInstructorId/:instructorId",
+  CourseController.getCoursesByInstructorId
+);
 
 router.post("/enrollInCourse", authentication, CourseController.enrollInCourse);
 
