@@ -1,167 +1,170 @@
-<div class="user-management">
-  <h1>User Management</h1>
-  <p class="subtitle">
-    Manage students, instructors, and admins across the platform
-  </p>
-
-  <div class="users-section">
-    <div class="header">
-      <div>
-        <h2>Users</h2>
-        <p class="subtitle">Manage users and their permissions</p>
-      </div>
-      <!--       <button class="add-user-btn">
-        <i class="bi bi-person-plus"></i>
-        Add User
-      </button> -->
+<div class="user-management container-fluid">
+  <div class="row">
+    <div class="col-12">
+      <h1>User Management</h1>
+      <p class="subtitle">
+        Manage students, instructors, and admins across the platform
+      </p>
     </div>
-
-    <div class="nav-container">
-      <div class="nav nav-tabs">
-        <li class="nav-item">
-          <a
-            class="nav-link"
-            href="javascript:void(0)"
-            [class.active]="selectedTab === 'all'"
-            (click)="selectTab('all')"
-            >All Users</a
-          >
-        </li>
-        <li class="nav-item">
-          <a
-            class="nav-link"
-            href="javascript:void(0)"
-            [class.active]="selectedTab === 'students'"
-            (click)="selectTab('students')"
-            >Students</a
-          >
-        </li>
-        <li class="nav-item">
-          <a
-            class="nav-link"
-            href="javascript:void(0)"
-            [class.active]="selectedTab === 'instructors'"
-            (click)="selectTab('instructors')"
-            >Instructors</a
-          >
-        </li>
-        <li class="nav-item">
-          <a
-            class="nav-link"
-            href="javascript:void(0)"
-            [class.active]="selectedTab === 'admins'"
-            (click)="selectTab('admins')"
-            >Admins</a
-          >
-        </li>
-      </div>
-    </div>
-
-    <div class="filters-row">
-      <div class="search-box">
-        <i class="bi bi-search"></i>
-        <input
-          type="text"
-          placeholder="Search users..."
-          [(ngModel)]="searchQuery"
-        />
-      </div>
-      <button
-        style="width: auto"
-        *ngIf="selectedTab === 'admins'"
-        class="create-admin-btn"
-        (click)="showCreateAdminModal = true"
-      >
-        Create Admin
-      </button>
-      <button
-        style="width: auto"
-        *ngIf="selectedTab === 'instructors'"
-        class="create-admin-btn"
-        (click)="showCreateInstructorModal = true"
-      >
-        Create instructor
-      </button>
-    </div>
-    <!--
-      <button class="filter-btn">
-        <i class="bi bi-funnel"></i>
-        Filters
-      </button>
-     -->
-
-    <table class="users-table">
-      <thead>
-        <tr>
-          <th>User</th>
-          <th>Role <i class="bi bi-arrow-down-up"></i></th>
-          <th>Status</th>
-          <th>Join Date</th>
-          <th>Courses</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let user of paginatedUsers" [attr.data-user-id]="user.id">
-          <td class="user-cell">
-            <div class="avatar" *ngIf="!user.avatar">
-              <div class="letter-avatar">
-                {{ user.name.charAt(0) | uppercase }}
-              </div>
-            </div>
-            <div class="avatar" *ngIf="user.avatar">
-              <img [src]="user.avatar" alt="User avatar" />
-            </div>
-
-            <div class="user-info">
-              <div class="name">{{ user.name }}</div>
-              <div class="email">{{ user.email }}</div>
-            </div>
-          </td>
-          <td>
-            <span class="role-badge" [class]="user.role.toLowerCase()">{{
-              user.role
-            }}</span>
-          </td>
-          <td>
-            <span class="status-badge" [class]="user.status.toLowerCase()">{{
-              user.status
-            }}</span>
-          </td>
-          <td>{{ user.joinDate | date : "MMM dd, yyyy" }}</td>
-          <td>{{ user.courses }}</td>
-          <td>
-            <div class="actions-dropdown" [class.show]="user.showActions">
-              <button class="action-btn" (click)="toggleActions(user, $event)">
-                <i class="bi bi-three-dots-vertical"></i>
-              </button>
-              <div class="dropdown-menu" [class.show]="user.showActions">
-                <button class="dropdown-item" (click)="editUser(user)">
-                  <i class="bi bi-pencil-fill"></i>
-                  <span>Edit</span>
-                </button>
-                <!-- <button class="dropdown-item" (click)="suspendUser(user)">
-                  <i class="bi bi-ban"></i>
-                  <span>{{
-                    user.status === "Suspended" ? "Activate" : "Suspend"
-                  }}</span>
-                </button> -->
-                <button
-                  class="dropdown-item delete"
-                  (click)="confirmDeleteUser(user)"
-                >
-                  <i class="bi bi-trash3-fill"></i>
-                  <span>Delete</span>
-                </button>
-              </div>
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
   </div>
-  <div class="pagination-container">
-    <nav *ngIf="totalPages > 1" aria-label="Page navigation" class="mt-3">
+
+  <div class="users-section card">
+    <div class="card-body">
+      <div class="header d-flex justify-content-between align-items-start mb-4">
+        <div>
+          <h2>Users</h2>
+          <p class="subtitle">Manage users and their permissions</p>
+        </div>
+        <!--       <button class="add-user-btn">
+          <i class="bi bi-person-plus"></i>
+          Add User
+        </button> -->
+      </div>
+
+      <div class="nav-container">
+        <div class="nav nav-tabs">
+          <li class="nav-item">
+            <a
+              class="nav-link"
+              href="javascript:void(0)"
+              [class.active]="selectedTab === 'all'"
+              (click)="selectTab('all')"
+              >All Users</a
+            >
+          </li>
+          <li class="nav-item">
+            <a
+              class="nav-link"
+              href="javascript:void(0)"
+              [class.active]="selectedTab === 'students'"
+              (click)="selectTab('students')"
+              >Students</a
+            >
+          </li>
+          <li class="nav-item">
+            <a
+              class="nav-link"
+              href="javascript:void(0)"
+              [class.active]="selectedTab === 'instructors'"
+              (click)="selectTab('instructors')"
+              >Instructors</a
+            >
+          </li>
+          <li class="nav-item">
+            <a
+              class="nav-link"
+              href="javascript:void(0)"
+              [class.active]="selectedTab === 'admins'"
+              (click)="selectTab('admins')"
+              >Admins</a
+            >
+          </li>
+        </div>
+      </div>
+
+      <div class="filters-row d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4">
+        <div class="search-box mb-3 mb-md-0">
+          <i class="bi bi-search"></i>
+          <input
+            type="text"
+            placeholder="Search users..."
+            [(ngModel)]="searchQuery"
+            class="form-control"
+          />
+        </div>
+        <div class="d-flex gap-2">
+          <button
+            *ngIf="selectedTab === 'admins'"
+            class="btn btn-primary"
+            (click)="showCreateAdminModal = true"
+          >
+            Create Admin
+          </button>
+          <button
+            *ngIf="selectedTab === 'instructors'"
+            class="btn btn-primary"
+            (click)="showCreateInstructorModal = true"
+          >
+            Create instructor
+          </button>
+        </div>
+      </div>
+      <!--
+        <button class="filter-btn">
+          <i class="bi bi-funnel"></i>
+          Filters
+        </button>
+       -->
+
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Role <i class="bi bi-arrow-down-up"></i></th>
+              <th>Status</th>
+              <th>Join Date</th>
+              <th>Courses</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let user of paginatedUsers" [attr.data-user-id]="user.id">
+              <td class="user-cell">
+                <div class="d-flex align-items-center">
+                  <div class="avatar me-2" *ngIf="!user.avatar">
+                    <div class="letter-avatar">
+                      {{ user.name.charAt(0) | uppercase }}
+                    </div>
+                  </div>
+                  <div class="avatar me-3" *ngIf="user.avatar">
+                    <img [src]="user.avatar" alt="User avatar" class="img-fluid" />
+                  </div>
+
+                  <div class="user-info">
+                    <div class="name">{{ user.name }}</div>
+                    <div class="email text-muted">{{ user.email }}</div>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <span class="badge" [class]="'bg-' + getRoleClass(user.role)">{{ user.role }}</span>
+              </td>
+              <td>
+                <span class="badge" [class]="'bg-' + getStatusClass(user.status)">{{ user.status }}</span>
+              </td>
+              <td>{{ user.joinDate | date : "MMM dd, yyyy" }}</td>
+              <td>{{ user.courses }}</td>
+              <td>
+                <div class="dropdown" [class.show]="user.showActions">
+                  <button 
+                    class="btn btn-link text-dark p-0" 
+                    (click)="toggleActions(user, $event)"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                  >
+                    <i class="bi bi-three-dots-vertical"></i>
+                  </button>
+                  <div class="dropdown-menu dropdown-menu-end" [class.show]="user.showActions">
+                    <button class="dropdown-item d-flex align-items-center" (click)="editUser(user)">
+                      <i class="bi bi-pencil-fill me-2"></i>
+                      <span>Edit</span>
+                    </button>
+                    <button class="dropdown-item d-flex align-items-center text-danger" (click)="confirmDeleteUser(user)">
+                      <i class="bi bi-trash3-fill me-2"></i>
+                      <span>Delete</span>
+                    </button>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="pagination-container mt-4">
+    <nav *ngIf="totalPages > 1" aria-label="Page navigation">
       <ul class="pagination justify-content-center">
         <li class="page-item" [class.disabled]="currentPage === 1">
           <button class="page-link" (click)="goToPage(currentPage - 1)">
