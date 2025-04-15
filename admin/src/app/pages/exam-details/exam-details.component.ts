@@ -46,6 +46,7 @@ export class ExamDetailsComponent implements OnInit {
   readonly MIN_ANSWERS = 2;
   readonly MAX_ANSWERS = 4;
   questionValidationErrors: { [key: number]: boolean } = {};
+  answerValidationErrors: { [key: string]: boolean } = {};
 
   constructor(
     private route: ActivatedRoute,
@@ -172,6 +173,9 @@ export class ExamDetailsComponent implements OnInit {
     const answers = this.getAnswers(questionIndex);
     if (answers.length < this.MAX_ANSWERS) {
       answers.push(this.createAnswerForm(false));
+
+      // Clear any validation errors for this question when adding a new answer
+      this.questionValidationErrors[questionIndex] = false;
     }
   }
 
@@ -259,6 +263,16 @@ export class ExamDetailsComponent implements OnInit {
     }
   }
 
+  checkAnswerValidation(questionIndex: number, answerIndex: number): void {
+    if (!this.isEditing) return;
+
+    const answer = this.getAnswers(questionIndex).at(answerIndex);
+    const answerText = answer.get('answer')?.value;
+
+    // Check if answer is empty or only whitespace
+    this.answerValidationErrors[`${questionIndex}-${answerIndex}`] = !answerText || answerText.trim() === '';
+  }
+
   validateAnswers(): boolean {
     let isValid = true;
     const questions = this.examForm.get('questions') as FormArray;
@@ -287,8 +301,28 @@ export class ExamDetailsComponent implements OnInit {
         isValid = false;
         break;
       }
+
+      // Check if all answers have text
+      for (let j = 0; j < answers.length; j++) {
+        this.checkAnswerValidation(i, j);
+        if (this.answerValidationErrors[`${i}-${j}`]) {
+          this.showErrorNotification(
+            `Question ${i + 1}, Answer ${j + 1} cannot be empty.`
+          );
+          isValid = false;
+          break;
+        }
+      }
+
+      if (!isValid) break;
     }
     return isValid;
+  }
+
+  showErrorNotification(message: string): void {
+    this.snackBar.open(message, 'Close', {
+      duration: 5000,
+    });
   }
 
   saveExam(): void {
@@ -324,6 +358,15 @@ export class ExamDetailsComponent implements OnInit {
     }
   }
 
+  showSuccessNotification(message: string): void {
+    this.snackBar.open(message, 'Close', {
+      duration: 3000,
+      panelClass: ['success-snackbar'],
+      verticalPosition: 'top',
+      horizontalPosition: 'right',
+    });
+  }
+
   onFileSelected(event: Event): void {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (file && this.examId) {
@@ -353,28 +396,5 @@ export class ExamDetailsComponent implements OnInit {
         },
       });
     }
-  }
-
-  private showErrorNotification(message: string): void {
-    const snackBarRef = this.snackBar.open(message, 'Close', {
-      duration: 0,
-      panelClass: ['error-snackbar', 'multiline-snackbar'],
-      verticalPosition: 'top',
-      horizontalPosition: 'right',
-      politeness: 'assertive'
-    });
-
-    snackBarRef.onAction().subscribe(() => {
-      snackBarRef.dismiss();
-    });
-  }
-
-  private showSuccessNotification(message: string): void {
-    this.snackBar.open(message, 'Close', {
-      duration: 3000,
-      panelClass: ['success-snackbar'],
-      verticalPosition: 'top',
-      horizontalPosition: 'right',
-    });
   }
 }

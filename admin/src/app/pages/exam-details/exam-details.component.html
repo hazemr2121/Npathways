@@ -137,14 +137,16 @@
                   class="dark-input"
                   formControlName="answer"
                   placeholder="Answer text"
-                  [class.is-invalid]="getAnswers(i).at(j).get('answer')?.invalid && getAnswers(i).at(j).get('answer')?.touched && isEditing"
+                  (blur)="checkAnswerValidation(i, j)"
+                  [class.is-invalid]="(getAnswers(i).at(j).get('answer')?.invalid && getAnswers(i).at(j).get('answer')?.touched && isEditing) || answerValidationErrors[i + '-' + j]"
                 />
                 <div
                   class="invalid-feedback"
-                  *ngIf="getAnswers(i).at(j).get('answer')?.invalid && getAnswers(i).at(j).get('answer')?.touched && isEditing"
+                  *ngIf="(getAnswers(i).at(j).get('answer')?.invalid && getAnswers(i).at(j).get('answer')?.touched && isEditing) || answerValidationErrors[i + '-' + j]"
                 >
                   <span *ngIf="getAnswers(i).at(j).get('answer')?.errors?.['required']">Answer text is required.</span>
                   <span *ngIf="getAnswers(i).at(j).get('answer')?.errors?.['minlength']">Answer must be at least 1 character.</span>
+                  <span *ngIf="answerValidationErrors[i + '-' + j]">Answer cannot be empty.</span>
                 </div>
                 <div class="answer-actions">
                   <label class="checkbox-container">
