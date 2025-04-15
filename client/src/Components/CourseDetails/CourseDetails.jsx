@@ -51,10 +51,6 @@ import DescriptionIcon from "@mui/icons-material/Description";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 import VerifiedIcon from "@mui/icons-material/Verified";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import BookmarkIcon from "@mui/icons-material/Bookmark";
-import BookmarkBorderIcon from "@mui/icons-material/BookmarkBorder";
-import LinkIcon from "@mui/icons-material/Link";
-import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
 
 // Styled components
 const CourseImage = styled(CardMedia)(({ theme }) => ({
@@ -153,10 +149,16 @@ export default function CourseDetails() {
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const isTablet = useMediaQuery(theme.breakpoints.between("sm", "md"));
 
-  // Check if user has already purchased this course
   useEffect(() => {
-    if (user && user.courses && user.courses.includes(id)) {
-      setAlreadyPurchased(true);
+    if (user && user.courses) {
+      const hasPurchased = user.courses.some((course) => course._id === id);
+      if (hasPurchased) {
+        console.log("User has already purchased this course.");
+        setAlreadyPurchased(true);
+      } else {
+        console.log("User has not purchased this course yet.");
+        setAlreadyPurchased(false);
+      }
     }
   }, [user, id]);
 
@@ -263,7 +265,6 @@ export default function CourseDetails() {
     setIsBookmarked(!isBookmarked);
     // You would typically save this to user preferences via API call
   };
-  console.log(course);
   // Generate course features
   const courseFeatures = [
     {
