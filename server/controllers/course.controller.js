@@ -278,6 +278,35 @@ class CourseController {
       res.status(500).json({ error: "Internal server error" });
     }
   }
+  
+  static async getAllStudentsInCourse(req, res) {
+    try {
+      const { id } = req.params;
+      if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+        return res.status(400).json({ error: "Invalid course ID" });
+      }
+      const course = await CourseModel.findById(id);
+      if (!course) {
+        return res.status(404).json({ error: "Course not found" });
+      }
+
+      // await course.populate("students", "_id firstName lastName email image");
+      // res.status(200).json(course.students);
+      const student=await User.find({
+        // courses:[$]
+      })
+      res.status(200).send({
+        StdCount:student.length,
+        student:student
+
+      })
+    } catch (error) {
+      console.error(`Error in course controller: ${error}`);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
 }
+
+
 
 export default CourseController;
