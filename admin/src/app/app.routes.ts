@@ -8,40 +8,54 @@ import { AdminLoginComponent } from './pages/admin-login/admin-login.component';
 import { ExamManagementComponent } from './pages/exam-management/exam-management.component';
 import { ExamDetailsComponent } from './pages/exam-details/exam-details.component';
 import { authGuard } from './guards/auth.guard';
+import { instructorGuard } from './guards/instructor.guard';
 import { PathwaysComponent } from './pages/pathways/pathways.component';
 
 export const routes: Routes = [
-  { path: '', redirectTo: 'user-management', pathMatch: 'full' },
+  { 
+    path: '', 
+    redirectTo: 'course-management', 
+    pathMatch: 'full' 
+  },
 
   { path: 'admin-login', component: AdminLoginComponent },
+  
+  // Admin-only routes
   {
     path: 'admin-dashboard',
     component: AdminDashboardComponent,
-    canActivate: [authGuard],
+    canActivate: [authGuard, instructorGuard],
   },
   {
     path: 'user-management',
     component: UserManagementComponent,
-    canActivate: [authGuard],
-  },
-  {
-    path: 'course-management',
-    component: CourseManagementComponent,
-    canActivate: [authGuard],
+    canActivate: [authGuard, instructorGuard],
   },
   {
     path: 'enrollment-management',
     component: EnrollmentManagementComponent,
-    canActivate: [authGuard],
+    canActivate: [authGuard, instructorGuard],
   },
   {
     path: 'certificates',
     component: CertificateComponent,
-    canActivate: [authGuard],
+    canActivate: [authGuard, instructorGuard],
   },
   {
     path: 'pathways',
     component: PathwaysComponent,
+    canActivate: [authGuard, instructorGuard],
+  },
+  {
+    path: 'exam-details/:id',
+    component: ExamDetailsComponent,
+    canActivate: [authGuard, instructorGuard],
+  },
+
+  // Routes accessible by both admin and instructor
+  {
+    path: 'course-management',
+    component: CourseManagementComponent,
     canActivate: [authGuard],
   },
   {
@@ -49,12 +63,6 @@ export const routes: Routes = [
     component: ExamManagementComponent,
     canActivate: [authGuard],
   },
-  {
-    path: 'exam-details/:id',
-    component: ExamDetailsComponent,
-    canActivate: [authGuard],
-  },
-
 
   // { path: '**', component:NotFoundComponent },
 

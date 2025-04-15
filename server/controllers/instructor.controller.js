@@ -58,7 +58,7 @@ const instructorContoller = {
         });
       }
       let secretKey = process.env.SECRET_KEY || "secretKey";
-      let token = await jwt.sign({ id: instructor._id }, secretKey, {
+      let token = await jwt.sign({ id: instructor._id, role: instructor.role }, secretKey, {
         expiresIn: "2d",
       });
       res.cookie("access_token", `Bearer ${token}`, {
