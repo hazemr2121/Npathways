@@ -262,6 +262,14 @@ const createEnrollmentSchema = Joi.object({
   nationality: Joi.string(),
   facultyName: Joi.string(),
   GPA: Joi.number(),
+  pathway: Joi.string()
+    .regex(/^[0-9a-fA-F]{24}$/)
+    .message("Enter a valid pathway id")
+    .required()
+    .messages({
+      "string.empty": "Pathway is required",
+      "any.required": "Pathway is required",
+    }),
 });
 
 const updateEnrollmentSchema = Joi.object({
@@ -285,6 +293,9 @@ const updateEnrollmentSchema = Joi.object({
   nationality: Joi.string(),
   facultyName: Joi.string(),
   GPA: Joi.number(),
+  pathway: Joi.string()
+    .regex(/^[0-9a-fA-F]{24}$/)
+    .message("Enter a valid pathway id"),
 });
 
 function getSchema(link, method) {

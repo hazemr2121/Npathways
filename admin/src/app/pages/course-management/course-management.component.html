@@ -153,7 +153,6 @@
         </button>
       </div>
 
-
       <!-- Course Grid -->
       <div class="row g-4" *ngIf="!isLoading && filteredCourses.length > 0">
         <div class="col-md-4" *ngFor="let course of paginatedCourses">
@@ -239,17 +238,21 @@
 
               <!-- Price -->
               <div class="mt-3">
-                <span class="h5 mb-0">${{ course.price || "0" }}</span>
-                <span
-                  class="text-muted text-decoration-line-through ms-2"
-                  *ngIf="course.price && course.discount"
-                >
-                  ${{
-                    (
-                      course.price +
-                      (course.price * (course.discount || 0)) / 100
-                    ).toFixed(2)
-                  }}
+                <div class="mt-3" *ngIf="course.price && course.discount">
+                  <span class="h5 mb-0" *ngIf="course.price && course.discount">
+                    ${{
+                      (
+                        course.price -
+                        (course.price * (course.discount || 0)) / 100
+                      ).toFixed(2)
+                    }}
+                  </span>
+                  <span class="text-muted text-decoration-line-through ms-2"
+                    >${{ course.price || "0" }}</span
+                  >
+                </div>
+                <span class="h5 mb-0" *ngIf="course.price && !course.discount">
+                  ${{ course.price || "0" }}
                 </span>
               </div>
             </div>

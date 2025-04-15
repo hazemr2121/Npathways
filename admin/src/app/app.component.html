@@ -5,6 +5,7 @@
   aria-labelledby="offcanvasLabel"
   data-bs-backdrop="false"
   data-bs-scroll="true"
+  *ngIf="isLoggedIn"
 >
   <div class="offcanvas-header">
     <div class="navbar-brand">Npathways</div>
@@ -12,16 +13,19 @@
 
   <div class="offcanvas-body">
     <ul>
-      <li>
+      <!-- Admin-only links -->
+      <li *ngIf="userRole === 'admin'">
         <a routerLink="/admin-dashboard" routerLinkActive="active">
           <i class="fa-solid fa-chart-column"></i> Dashboard
         </a>
       </li>
-      <li>
+      <li *ngIf="userRole === 'admin'">
         <a routerLink="/user-management" routerLinkActive="active">
           <i class="fa-solid fa-user-group"></i> User Management
         </a>
       </li>
+      
+      <!-- Links for both admin and instructor -->
       <li>
         <a routerLink="/course-management" routerLinkActive="active">
           <i class="fa-solid fa-book-open"></i> Course Management
@@ -32,17 +36,19 @@
           <i class="fa-solid fa-sheet-plastic"></i> Exam Management
         </a>
       </li>
-      <li>
+
+      <!-- Admin-only links -->
+      <li *ngIf="userRole === 'admin'">
         <a routerLink="/enrollment-management" routerLinkActive="active">
           <i class="fa-solid fa-graduation-cap"></i> Enrollment Management
         </a>
       </li>
-      <li>
+      <li *ngIf="userRole === 'admin'">
         <a routerLink="/certificates" routerLinkActive="active">
           <i class="fa-solid fa-certificate"></i> Certificates
         </a>
       </li>
-      <li>
+      <li *ngIf="userRole === 'admin'">
         <a routerLink="/pathways" routerLinkActive="active">
           <i class="fa-solid fa-shuffle"></i> Pathways
         </a>

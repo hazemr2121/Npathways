@@ -51,10 +51,6 @@ import DescriptionIcon from "@mui/icons-material/Description";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 import VerifiedIcon from "@mui/icons-material/Verified";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import BookmarkIcon from "@mui/icons-material/Bookmark";
-import BookmarkBorderIcon from "@mui/icons-material/BookmarkBorder";
-import LinkIcon from "@mui/icons-material/Link";
-import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
 
 // Styled components
 const CourseImage = styled(CardMedia)(({ theme }) => ({
@@ -152,11 +148,40 @@ export default function CourseDetails() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const isTablet = useMediaQuery(theme.breakpoints.between("sm", "md"));
+  const [enrolledStudents, setEnrolledStudents] = useState(0);
+  const [instructorCoursesCount, setInstructorCoursesCount] = useState(0);
 
-  // Check if user has already purchased this course
   useEffect(() => {
-    if (user && user.courses && user.courses.includes(id)) {
-      setAlreadyPurchased(true);
+    const fetchEnrolledStudentsInCourse = async () => {
+      // Only fetch if course._id exists
+      if (!course._id) return;
+
+      setLoading(true);
+      try {
+        const response = await axios.get(
+          `http://localhost:5024/api/course/getStudentsCountInCourse/${course._id}`,
+          { withCredentials: true }
+        );
+        const enrolledStudents = response.data.StudentCount;
+        setEnrolledStudents(enrolledStudents);
+      } catch (error) {
+        console.error("Error fetching enrolled students:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEnrolledStudentsInCourse();
+  }, [course._id]);
+
+  useEffect(() => {
+    if (user && user.courses) {
+      const hasPurchased = user.courses.some((course) => course._id === id);
+      if (hasPurchased) {
+        setAlreadyPurchased(true);
+      } else {
+        setAlreadyPurchased(false);
+      }
     }
   }, [user, id]);
 
@@ -196,7 +221,11 @@ export default function CourseDetails() {
 
   useEffect(() => {
     getSingleCourse();
-  }, [id]);
+    // Only fetch instructor courses if instructors exist
+    if (course.instructors && course.instructors.length > 0) {
+      fetchInstructorCoursesCount();
+    }
+  }, [id, user, course._id]);
 
   // Calculate price after discount
   const priceAfterDiscount = course.price - (course.discount || 0);
@@ -257,13 +286,37 @@ export default function CourseDetails() {
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
   };
+  const instructorId =
+    course.instructors && course.instructors.length > 0
+      ? course.instructors[0]._id
+      : null;
+  console.log("First instructor ID:", instructorId);
 
   // Toggle bookmark
   const handleToggleBookmark = () => {
     setIsBookmarked(!isBookmarked);
     // You would typically save this to user preferences via API call
   };
-  console.log(course);
+  const fetchInstructorCoursesCount = async () => {
+    setLoading(true);
+    try {
+      // Check if instructors exist and array has at least one element
+      if (course.instructors && course.instructors.length > 0) {
+        const response = await axios.get(
+          `http://localhost:5024/api/course/getcoursesByInstructorId/${course.instructors[0]._id}`,
+          { withCredentials: true }
+        );
+        console.log("Fetched instructor courses count:", response.data);
+        const coursesCount = response.data.coursesCount;
+        setInstructorCoursesCount(coursesCount);
+      }
+    } catch (error) {
+      console.error("Error fetching instructor courses count:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Generate course features
   const courseFeatures = [
     {
@@ -284,7 +337,7 @@ export default function CourseDetails() {
     {
       icon: <PeopleIcon color="primary" />,
       label: "Enrolled",
-      value: course.enrollmentCount || "0 students",
+      value: enrolledStudents + " students" || "0 students",
     },
     {
       icon: <PlayArrowIcon color="primary" />,
@@ -719,13 +772,13 @@ export default function CourseDetails() {
                                     </Box>
                                   </Box>
 
-                                  <Typography
+                                  {/* <Typography
                                     variant="body2"
                                     color="text.secondary"
                                   >
                                     {instructor.bio ||
                                       "This instructor has not added a bio yet."}
-                                  </Typography>
+                                  </Typography> */}
 
                                   <Box
                                     sx={{
@@ -737,10 +790,7 @@ export default function CourseDetails() {
                                   >
                                     <Chip
                                       icon={<SchoolIcon fontSize="small" />}
-                                      label={`${
-                                        instructor.courseCount ||
-                                        Math.floor(Math.random() * 10) + 1
-                                      } Courses`}
+                                      label={`${instructorCoursesCount} Courses`}
                                       size="small"
                                       variant="outlined"
                                     />
@@ -906,7 +956,15 @@ export default function CourseDetails() {
                         <AccessTimeIcon fontSize="small" color="primary" />
                       </ListItemIcon>
                       <ListItemText
-                        primary={course.duration || "Self-paced learning"}
+                        primary={
+                          course.lessons
+                            ? `${course.lessons.reduce(
+                                (total, lesson) =>
+                                  total + (lesson.duration || 0),
+                                0
+                              )} mins`
+                            : "Self-paced learning"
+                        }
                         primaryTypographyProps={{ variant: "body2" }}
                       />
                     </ListItem>

@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { AuthService } from './auth.service';
 
 // Interface for Instructor data
 export interface Instructor {
@@ -22,10 +23,19 @@ export interface Instructor {
 export class InstructorService {
   private readonly BASE_URL = 'http://localhost:5024/api';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private authService: AuthService) {}
 
   getAllInstructors(): Observable<Instructor[]> {
-    return this.http.get<Instructor[]>(`${this.BASE_URL}/admin/AllInstructor`);
+    
+    if (this.authService.isAdmin()) {
+      return this.http.get<Instructor[]>(
+        `${this.BASE_URL}/admin/AllInstructor`
+      );
+    } else if (this.authService.isInstructor()) {
+      return this.http.get<Instructor[]>(
+        `${this.BASE_URL}/instructor/getAllInstructors`
+      );
+    } else return new Observable<Instructor[]>();
   }
 
   getInstructorById(id: string): Observable<Instructor> {

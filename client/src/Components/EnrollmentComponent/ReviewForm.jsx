@@ -43,7 +43,6 @@ const ReviewForm = () => {
 
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
-  const isMediumScreen = useMediaQuery(theme.breakpoints.between("sm", "md"));
 
   const handleFieldChange = (e) => {
     const { name, value } = e.target;
@@ -75,6 +74,7 @@ const ReviewForm = () => {
       "facultyName",
       "GPA",
       "motivationLetter",
+      "pathway",
     ];
 
     const missingFields = requiredFields.filter((field) => {
@@ -120,6 +120,11 @@ const ReviewForm = () => {
         facultyName: enrollmentData.facultyName || enrollmentData.faculty || "",
         GPA: parseFloat(enrollmentData.GPA) || 0,
         motivationLetter: enrollmentData.motivationLetter || "",
+        pathway:
+          enrollmentData.pathwayId ||
+          enrollmentData.pathway?.id ||
+          enrollmentData.pathway ||
+          "",
         address: {
           country: enrollmentData.address?.country || "",
           city: enrollmentData.address?.city || "",
@@ -132,7 +137,7 @@ const ReviewForm = () => {
       };
       validateSubmissionData(submissionData);
 
-      console.log("Submitting data:", JSON.stringify(submissionData, null, 2));
+      // console.log("Submitting data:", JSON.stringify(submissionData, null, 2));
 
       const response = await axios.post(
         "http://localhost:5024/api/enrollment/createEnrollment",
@@ -219,6 +224,7 @@ const ReviewForm = () => {
         <CustomStepper activeStep={activeStep} steps={steps} />
       </Box>
 
+      {/* Personal  */}
       <Accordion defaultExpanded>
         <AccordionSummary
           expandIcon={
@@ -239,7 +245,7 @@ const ReviewForm = () => {
                 value={
                   editingSections.personalInfo
                     ? tempData.firstName
-                    : enrollmentData.firstName
+                    : enrollmentData.firstName || ""
                 }
                 onChange={handleFieldChange}
                 fullWidth
@@ -254,7 +260,7 @@ const ReviewForm = () => {
                 value={
                   editingSections.personalInfo
                     ? tempData.lastName
-                    : enrollmentData.lastName
+                    : enrollmentData.lastName || ""
                 }
                 onChange={handleFieldChange}
                 fullWidth
@@ -288,7 +294,7 @@ const ReviewForm = () => {
                 value={
                   editingSections.personalInfo
                     ? tempData.nationality
-                    : enrollmentData.nationality
+                    : enrollmentData.nationality || ""
                 }
                 onChange={handleFieldChange}
                 fullWidth
@@ -300,6 +306,7 @@ const ReviewForm = () => {
         </AccordionDetails>
       </Accordion>
 
+      {/* Contact Info */}
       <Accordion defaultExpanded>
         <AccordionSummary
           expandIcon={
@@ -347,6 +354,7 @@ const ReviewForm = () => {
         </AccordionDetails>
       </Accordion>
 
+      {/* Address */}
       <Accordion defaultExpanded>
         <AccordionSummary
           expandIcon={
@@ -409,6 +417,7 @@ const ReviewForm = () => {
         </AccordionDetails>
       </Accordion>
 
+      {/* Faculty Info */}
       <Accordion defaultExpanded>
         <AccordionSummary
           expandIcon={
@@ -456,6 +465,39 @@ const ReviewForm = () => {
         </AccordionDetails>
       </Accordion>
 
+      {/* Pathway */}
+      <Accordion defaultExpanded>
+        <AccordionSummary
+          expandIcon={
+            <ExpandMoreIcon sx={{ bgcolor: "#181B21", color: "#46C98B" }} />
+          }
+          sx={{ bgcolor: "#181B21", color: "#46C98B" }}
+        >
+          <Typography sx={{ fontSize: isSmallScreen ? "0.875rem" : "1rem" }}>
+            Pathway
+          </Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <Grid container spacing={isSmallScreen ? 1 : 2} sx={{ mt: 1 }}>
+            <Grid item xs={12}>
+              <TextField
+                label="Selected Pathway"
+                name="pathway"
+                value={
+                  typeof enrollmentData.pathway === "object"
+                    ? enrollmentData.pathway.name
+                    : enrollmentData.pathway || "Not selected"
+                }
+                fullWidth
+                size={isSmallScreen ? "small" : "medium"}
+                InputProps={{ readOnly: true }}
+              />
+            </Grid>
+          </Grid>
+        </AccordionDetails>
+      </Accordion>
+
+      {/* Motivation Letter */}
       <Accordion defaultExpanded>
         <AccordionSummary
           expandIcon={
@@ -486,6 +528,7 @@ const ReviewForm = () => {
         </AccordionDetails>
       </Accordion>
 
+      {/* Entry Exam */}
       <Accordion defaultExpanded>
         <AccordionSummary
           expandIcon={
@@ -564,7 +607,7 @@ const ReviewForm = () => {
         <Button
           variant="contained"
           color="error"
-          onClick={() => navigate("/enrollment/entryExam")}
+          onClick={() => navigate("/enrollment/personal-details")}
           size={isSmallScreen ? "small" : "medium"}
           fullWidth={isSmallScreen}
         >

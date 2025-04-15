@@ -6,6 +6,7 @@ import {
   InstructorService,
   Instructor,
 } from '../../../services/instructor.service';
+import { Exam, ExamService } from '../../../services/exam.service';
 
 interface Lesson {
   name: string;
@@ -63,15 +64,20 @@ export class EditCourseDialogComponent implements OnInit {
   instructors: Instructor[] = [];
   selectedInstructors: string[] = [];
   newInstructor: string = '';
+  exams: Exam[] = [];
+  selectedExams: string[] = [];
+  newExam: string = '';
   validationErrors: ValidationErrors = {};
 
   constructor(
     private coursesService: CoursesService,
-    private instructorService: InstructorService
+    private instructorService: InstructorService,
+    private examService: ExamService
   ) {}
 
   ngOnInit() {
     this.loadInstructors();
+    this.loadRequiredExams();
   }
 
   loadInstructors() {
@@ -86,6 +92,31 @@ export class EditCourseDialogComponent implements OnInit {
     });
   }
 
+  loadRequiredExams() {
+    this.examService.getExams().subscribe({
+      next: (exams) => {
+        this.exams = exams;
+      },
+      error: (error) => {
+        console.error('Error loading exams:', error);
+        this.error = 'Failed to load exams. Please try again.';
+      },
+    });
+  }
+
+  addExam() {
+    if (this.newExam && !this.selectedExams.includes(this.newExam)) {
+      this.selectedExams.push(this.newExam);
+      this.newExam = '';
+    }
+  }
+  removeExam(examId: string) {
+    this.selectedExams = this.selectedExams.filter((id) => id !== examId);
+  }
+  getExamName(examId: string): string {
+    const exam = this.exams.find((exam) => exam._id === examId);
+    return exam ? exam.name : 'Unknown Exam'; 
+  }
   getInstructorName(instructorId: string): string {
     const instructor = this.instructors.find((i) => i._id === instructorId);
     return instructor ? `${instructor.firstName} ${instructor.lastName}` : '';
@@ -254,6 +285,9 @@ export class EditCourseDialogComponent implements OnInit {
         typeof instructor === 'string' ? instructor : instructor._id || ''
       )
       .filter(Boolean);
+    this.selectedExams = (course.requiredExams as (Exam | string)[]).map(
+      (exam) => (typeof exam === 'string' ? exam : exam._id || '')
+    );
     this.showDialog = true;
     this.error = null;
     this.validationErrors = {};
@@ -296,6 +330,8 @@ export class EditCourseDialogComponent implements OnInit {
 
       // Add instructors
       formData.append('instructors', JSON.stringify(this.selectedInstructors));
+
+      formData.append('requiredExams', JSON.stringify(this.selectedExams));
 
       // Add lessons - only include name and duration
       const validLessons = this.course.lessons

@@ -6,9 +6,10 @@ import {
   Box,
   FormControl,
   InputLabel,
-  MenuItem,
   Select,
+  MenuItem,
   IconButton,
+  useTheme,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
@@ -37,39 +38,6 @@ const FACULTIES = [
   "Other",
 ];
 
-const styles = {
-  input: {
-    "& .MuiOutlinedInput-root": {
-      "& fieldset": { borderColor: "#181B21" },
-      "&:hover fieldset": { borderColor: "#181B21" },
-      "&.Mui-focused fieldset": { borderColor: "#181B21" },
-    },
-  },
-  sectionHeader: {
-    backgroundColor: "#181B21",
-    padding: 2,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    cursor: "pointer",
-  },
-  sectionTitle: {
-    color: "#46C98B",
-    fontWeight: "bold",
-  },
-  iconButton: (expanded) => ({
-    color: "#46C98B",
-    transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
-    transition: "transform 0.3s ease",
-  }),
-  formSection: {
-    border: "1px solid #181B21",
-    borderRadius: "4px",
-    marginTop: "16px",
-    overflow: "hidden",
-  },
-};
-
 const FormSection = ({
   title,
   name,
@@ -77,20 +45,50 @@ const FormSection = ({
   handleToggleSection,
   children,
   required = false,
-}) => (
-  <Box sx={styles.formSection}>
-    <Box sx={styles.sectionHeader} onClick={() => handleToggleSection(name)}>
-      <Typography variant="h6" sx={styles.sectionTitle}>
-        {title}
-        {required && " *"}
-      </Typography>
-      <IconButton>
-        <ExpandMoreIcon sx={styles.iconButton(expanded)} />
-      </IconButton>
+}) => {
+  const theme = useTheme();
+
+  return (
+    <Box
+      sx={{
+        border: `1px solid ${theme.palette.background.dark}`,
+        borderRadius: "4px",
+        marginTop: "16px",
+        overflow: "hidden",
+      }}
+    >
+      <Box
+        sx={{
+          backgroundColor: "background.dark",
+          padding: 2,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          cursor: "pointer",
+        }}
+        onClick={() => handleToggleSection(name)}
+      >
+        <Typography
+          variant="h6"
+          sx={{ color: "primary.main", fontWeight: "bold" }}
+        >
+          {title}
+          {required && " *"}
+        </Typography>
+        <IconButton>
+          <ExpandMoreIcon
+            sx={{
+              color: "primary.main",
+              transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
+              transition: "transform 0.3s ease",
+            }}
+          />
+        </IconButton>
+      </Box>
+      {expanded && <Box sx={{ padding: 2 }}>{children}</Box>}
     </Box>
-    {expanded && <Box sx={{ padding: 2 }}>{children}</Box>}
-  </Box>
-);
+  );
+};
 
 export default function FacultySection({
   formData,
@@ -123,7 +121,13 @@ export default function FacultySection({
             <FormControl
               fullWidth
               error={Boolean(errors.faculty)}
-              sx={styles.input}
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  "& fieldset": { borderColor: "background.dark" },
+                  "&:hover fieldset": { borderColor: "background.dark" },
+                  "&.Mui-focused fieldset": { borderColor: "background.dark" },
+                },
+              }}
             >
               <InputLabel>Faculty *</InputLabel>
               <Select
@@ -133,9 +137,12 @@ export default function FacultySection({
                 onChange={handleChange}
                 onBlur={handleBlur}
               >
-                {FACULTIES.map((fac) => (
-                  <MenuItem key={fac} value={fac}>
-                    {fac}
+                <MenuItem value="">
+                  <em>Select a faculty</em>
+                </MenuItem>
+                {FACULTIES.map((faculty) => (
+                  <MenuItem key={faculty} value={faculty}>
+                    {faculty}
                   </MenuItem>
                 ))}
               </Select>
@@ -152,18 +159,18 @@ export default function FacultySection({
               label="GPA (0.00 - 4.00)"
               placeholder="GPA"
               name="GPA"
-              value={formData.GPA}
+              value={formData.GPA || ""}
               onChange={handleChange}
               onBlur={handleBlur}
               error={Boolean(errors.GPA)}
               helperText={errors.GPA}
-              inputProps={{
-                inputMode: "decimal",
-                step: "0.01",
-                min: 0,
-                max: 4,
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  "& fieldset": { borderColor: "background.dark" },
+                  "&:hover fieldset": { borderColor: "background.dark" },
+                  "&.Mui-focused fieldset": { borderColor: "background.dark" },
+                },
               }}
-              sx={styles.input}
             />
           </Grid>
         </Grid>

@@ -19,6 +19,7 @@ import PersonalInfoSection from "./sectionsPersonal/PersonalInfoSection";
 import AddressAndContactSection from "./sectionsPersonal/ContactInfoSection";
 import FacultySection from "./sectionsPersonal/FacultySection";
 import MotivationLetterSection from "./sectionsPersonal/MotivationLetterSection";
+import PathwaySection from "./sectionsPersonal/PathwaySection";
 
 const COUNTRIES = [
   { code: "EG", label: "Egypt", phoneCode: "+20" },
@@ -115,6 +116,7 @@ const INITIAL_FORM_DATA = {
   GPA: "",
   motivationLetter: "",
   exam: [],
+  pathway: "",
 };
 
 const STEPS = ["User Info", "Exam", "Result"];
@@ -149,6 +151,7 @@ export default function PersonalDetailsForm() {
           facultyName: parsedData.facultyName || parsedData.faculty || "",
           phoneCountry:
             parsedData.phoneCountry || parsedData.address?.country || "",
+          pathway: parsedData.pathway || "",
         }));
       } catch (error) {
         console.error("Error parsing saved data:", error);
@@ -158,8 +161,17 @@ export default function PersonalDetailsForm() {
 
   useEffect(() => {
     localStorage.setItem("formData", JSON.stringify(formData));
+    // console.log(formData);
   }, [formData]);
+
   const validationSchema = Yup.object({
+    pathway: Yup.object(
+      { id: Yup.string().required("Pathway ID is required") },
+      ["name", "id"].reduce((acc, key) => {
+        acc[key] = Yup.string().required(`${key} is required`);
+        return acc;
+      }, {})
+    ),
     dateOfBirth: Yup.date()
       .required("Date of birth is required")
       .min(new Date(1980, 0, 1), "Date of birth must be 1980 or later")
@@ -181,7 +193,7 @@ export default function PersonalDetailsForm() {
           return this.createError({ message: "Phone number is required" });
         }
 
-        if (!/^[\+0-9\s\-\(\)]+$/.test(value)) {
+        if (!/^[+0-9\s\-()]+$/.test(value)) {
           return this.createError({
             message:
               "Phone number must contain only digits, spaces, dashes, parentheses, or a plus sign",
@@ -194,7 +206,7 @@ export default function PersonalDetailsForm() {
             return this.createError({ message: "Invalid country selected" });
           }
 
-          const cleanedValue = value.replace(/[\s\-\(\)]/g, "");
+          const cleanedValue = value.replace(/[\s\-()]/g, "");
           let normalizedValue;
           let saveValue = cleanedValue;
           const requirements = PHONE_LENGTH_REQUIREMENTS[phoneCountry] || {
@@ -310,6 +322,14 @@ export default function PersonalDetailsForm() {
       .required("GPA is required")
       .min(0, "GPA must be between 0-4")
       .max(4, "GPA must be between 0-4")
+      .test(
+        "decimal-places",
+        "GPA can have at most 2 decimal places",
+        (value) =>
+          value === undefined ||
+          value === null ||
+          /^\d+(\.\d{0,2})?$/.test(value.toString())
+      )
       .typeError("Enter a valid GPA"),
     motivationLetter: Yup.string()
       .required("Motivation letter is required")
@@ -333,6 +353,8 @@ export default function PersonalDetailsForm() {
         };
       } else if (name === "faculty") {
         newData = { ...newData, faculty: value, facultyName: value };
+      } else if (name === "pathway") {
+        newData = { ...newData, pathway: value };
       } else {
         newData = { ...newData, [name]: value };
       }
@@ -422,6 +444,8 @@ export default function PersonalDetailsForm() {
           street: formData.address.street || "",
         },
         phoneCountry: getCountryName(formData.phoneCountry) || "",
+        pathway: formData.pathway || "",
+        pathwayId: formData.pathway?.id || formData.pathway || "",
       };
 
       setErrors({});
@@ -439,6 +463,7 @@ export default function PersonalDetailsForm() {
       setOpenSnackbar(true);
     }
   }, [formData, setPersonalDetails, navigate]);
+
   const handleSnackbarClose = useCallback(() => {
     setSnackbarQueue((prev) => prev.slice(1));
     setOpenSnackbar(false);
@@ -468,6 +493,12 @@ export default function PersonalDetailsForm() {
         handleBlur={handleBlur}
       />
       <FacultySection
+        formData={formData}
+        errors={errors}
+        handleChange={handleChange}
+        handleBlur={handleBlur}
+      />
+      <PathwaySection
         formData={formData}
         errors={errors}
         handleChange={handleChange}

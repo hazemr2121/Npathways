@@ -85,8 +85,7 @@ function App() {
                     element={<CourseDetails />}
                   />
                 </Route>
-
-                {/* Student-only routes */}
+              {/* Student-only routes */}
                 <Route element={<ProtectedRoute allowedRoles={["student"]} />}>
                   <Route path="/student/mypathway" element={<MyPathway />} />
                   <Route

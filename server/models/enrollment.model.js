@@ -39,6 +39,11 @@ const EnrollmentSchema = new Schema(
     nationality: String,
     facultyName: String,
     GPA: Number,
+    pathway: {
+      type: Schema.Types.ObjectId,
+      ref: "Pathway",
+      required: true,
+    },
     motivationLetter: {
       type: String,
       required: true,

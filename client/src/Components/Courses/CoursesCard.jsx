@@ -17,7 +17,7 @@ import {
   AvatarGroup,
   Rating,
 } from "@mui/material";
-import { styled, alpha } from "@mui/material/styles";
+import { styled } from "@mui/material/styles";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import image from "../../assets/Rectangle 72.png";
@@ -88,9 +88,28 @@ const PriceTag = styled(Box)(({ theme, hasDiscount }) => ({
 function CoursesCard({ course }) {
   const [isEnrolled, setIsEnrolled] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [enrollLoading, setEnrollLoading] = useState(false);
   const navigate = useNavigate();
   const theme = useTheme();
+
+  const [enrolledStudents, setEnrolledStudents] = useState(0);
+  useEffect(() => {
+    const fetchEnrolledStudentsInCourse = async () => {
+      setLoading(true);
+      try {
+        const response = await axios.get(
+          `http://localhost:5024/api/course/getStudentsCountInCourse/${course._id}`,
+          { withCredentials: true }
+        );
+        const enrolledStudents = response.data.StudentCount;
+        setEnrolledStudents(enrolledStudents);
+      } catch (error) {
+        console.error("Error fetching enrolled students:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchEnrolledStudentsInCourse();
+  }, [course._id]);
 
   useEffect(() => {
     const checkEnrollment = async () => {
@@ -109,28 +128,6 @@ function CoursesCard({ course }) {
 
     checkEnrollment();
   }, [course._id]);
-
-  const handleEnroll = async () => {
-    setEnrollLoading(true);
-    try {
-      const response = await axios.post(
-        "http://localhost:5024/api/course/enrollInCourse",
-        { courseId: course._id },
-        { withCredentials: true }
-      );
-      console.log("Enrolled successfully:", response.data);
-      setIsEnrolled(true);
-    } catch (error) {
-      if (error.response?.data?.examsNeeded) {
-        const examsNeeded = error.response.data.examsNeeded;
-        navigate(`/exam/${examsNeeded[0]}`);
-      } else {
-        console.error("Error enrolling in course:", error);
-      }
-    } finally {
-      setEnrollLoading(false);
-    }
-  };
 
   return (
     <StyledCard component={motion.div} whileHover={{ scale: 1.02 }}>
@@ -160,7 +157,7 @@ function CoursesCard({ course }) {
                 }}
               >
                 <SchoolIcon fontSize="small" />
-                {Math.floor(Math.random() * 5000) + 100} students enrolled
+                {enrolledStudents} students enrolled
               </Typography>
             </MediaOverlay>
 

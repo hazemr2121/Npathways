@@ -3,6 +3,7 @@ import fs from "fs";
 import CourseModel from "../models/course.model.js";
 import SubmittedExamModel from "../models/submittedExam.model.js";
 import User from "../models/user.model.js";
+import { Mongoose } from "mongoose";
 
 class CourseController {
   static async getAllCourses(req, res) {
@@ -273,6 +274,43 @@ class CourseController {
 
       // await course.populate("students", "_id firstName lastName email image");
       res.status(200).json(course.students);
+    } catch (error) {
+      console.error(`Error in course controller: ${error}`);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+
+  static async getAllStudentsInCourse(req, res) {
+    try {
+      const { id } = req.params;
+      if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+        return res.status(400).json({ error: "Invalid course ID" });
+      }
+      const course = await CourseModel.findById(id);
+      if (!course) {
+        return res.status(404).json({ error: "Course not found" });
+      }
+      const student = await User.find({
+        courses: id,
+      });
+      res.status(200).send({
+        StudentCount: student.length,
+        student: student,
+      });
+    } catch (error) {
+      console.error(`Error in course controller: ${error}`);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
+  static async getCoursesByInstructorId(req, res) {
+    try {
+      const { instructorId } = req.params;
+      if (!instructorId.match(/^[0-9a-fA-F]{24}$/)) {
+        return res.status(400).json({ error: "Invalid instructor ID" });
+      }
+      const courses = await CourseModel.find({ instructors: instructorId });
+      const courseCount = courses.length;
+      res.status(200).send({ courseCount: courseCount });
     } catch (error) {
       console.error(`Error in course controller: ${error}`);
       res.status(500).json({ error: "Internal server error" });

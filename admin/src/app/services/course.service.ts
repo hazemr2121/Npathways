@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Instructor } from './instructor.service';
+import { AuthService } from './auth.service';
 
 interface Lesson {
   name: string;
@@ -33,7 +34,7 @@ export interface Course {
 export class CoursesService {
   private apiUrl = 'http://localhost:5024/api/course';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private authService: AuthService) {}
 
   getCourses(): Observable<Course[]> {
     return this.http.get<Course[]>(this.apiUrl);
@@ -57,8 +58,14 @@ export class CoursesService {
     return this.http.delete<void>(`${this.apiUrl}/deleteCourse/${id}`);
   }
   getUsersInCourse(id: string): Observable<any> {
-    return this.http.get<any>(
-      `http://localhost:5024/api/admin/getUsersInCourse/${id}`
-    );
+    if (this.authService.isAdmin()) {
+      return this.http.get<any>(
+        `http://localhost:5024/api/admin/getUsersInCourse/${id}`
+      );
+    } else if (this.authService.isInstructor()) {
+      return this.http.get<any>(
+        `http://localhost:5024/api/admin/getStudentsInCourse/${id}`
+      );
+    } else return new Observable<any>();
   }
 }

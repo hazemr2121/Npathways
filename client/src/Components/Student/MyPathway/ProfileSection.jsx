@@ -158,6 +158,16 @@ export default function ProfileSection() {
 
   const handleEdit = () => {
     setIsEditing(true);
+    axios.patch(
+      `http://localhost:5024/api/student`,
+      {
+        withCredentials: true,
+      },
+      {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+      }
+    );
   };
 
   const handleSave = async () => {
@@ -167,8 +177,19 @@ export default function ProfileSection() {
         return;
       }
 
-      // You would implement the API call to update user data here
-      // For now, just simulate a successful update
+      // Make API call to update user data
+      const response = await axios.patch(
+        `http://localhost:5024/api/student`,
+        {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+        },
+        {
+          withCredentials: true,
+        }
+      );
+
+      // Update local state with the response data
       setUserData({
         ...userData,
         firstName: formData.firstName,
@@ -182,6 +203,7 @@ export default function ProfileSection() {
         setSaveSuccess(false);
       }, 3000);
     } catch (err) {
+      console.error("Error updating profile:", err);
       setError("Failed to update profile. Please try again.");
     }
   };

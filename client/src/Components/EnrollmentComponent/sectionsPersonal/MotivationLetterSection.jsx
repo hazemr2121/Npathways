@@ -1,39 +1,13 @@
 import React, { useState } from "react";
-import { Grid, TextField, Typography, Box, IconButton } from "@mui/material";
+import {
+  Grid,
+  TextField,
+  Typography,
+  Box,
+  IconButton,
+  useTheme,
+} from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-
-const styles = {
-  input: {
-    "& .MuiOutlinedInput-root": {
-      "& fieldset": { borderColor: "#181B21" },
-      "&:hover fieldset": { borderColor: "#181B21" },
-      "&.Mui-focused fieldset": { borderColor: "#181B21" },
-    },
-  },
-  sectionHeader: {
-    backgroundColor: "#181B21",
-    padding: 2,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    cursor: "pointer",
-  },
-  sectionTitle: {
-    color: "#46C98B",
-    fontWeight: "bold",
-  },
-  iconButton: (expanded) => ({
-    color: "#46C98B",
-    transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
-    transition: "transform 0.3s ease",
-  }),
-  formSection: {
-    border: "1px solid #181B21",
-    borderRadius: "4px",
-    marginTop: "16px",
-    overflow: "hidden",
-  },
-};
 
 const FormSection = ({
   title,
@@ -42,20 +16,50 @@ const FormSection = ({
   handleToggleSection,
   children,
   required = false,
-}) => (
-  <Box sx={styles.formSection}>
-    <Box sx={styles.sectionHeader} onClick={() => handleToggleSection(name)}>
-      <Typography variant="h6" sx={styles.sectionTitle}>
-        {title}
-        {required && " *"}
-      </Typography>
-      <IconButton>
-        <ExpandMoreIcon sx={styles.iconButton(expanded)} />
-      </IconButton>
+}) => {
+  const theme = useTheme();
+
+  return (
+    <Box
+      sx={{
+        border: `1px solid ${theme.palette.background.dark}`,
+        borderRadius: "4px",
+        marginTop: "16px",
+        overflow: "hidden",
+      }}
+    >
+      <Box
+        sx={{
+          backgroundColor: "background.dark",
+          padding: 2,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          cursor: "pointer",
+        }}
+        onClick={() => handleToggleSection(name)}
+      >
+        <Typography
+          variant="h6"
+          sx={{ color: "primary.main", fontWeight: "bold" }}
+        >
+          {title}
+          {required && " *"}
+        </Typography>
+        <IconButton>
+          <ExpandMoreIcon
+            sx={{
+              color: "primary.main",
+              transform: expanded ? "rotate(180deg)" : "rotate(0deg)",
+              transition: "transform 0.3s ease",
+            }}
+          />
+        </IconButton>
+      </Box>
+      {expanded && <Box sx={{ padding: 2 }}>{children}</Box>}
     </Box>
-    {expanded && <Box sx={{ padding: 2 }}>{children}</Box>}
-  </Box>
-);
+  );
+};
 
 export default function MotivationLetterSection({
   formData,
@@ -96,7 +100,13 @@ export default function MotivationLetterSection({
               onBlur={handleBlur}
               error={Boolean(errors.motivationLetter)}
               helperText={errors.motivationLetter || "Minimum 50 characters"}
-              sx={styles.input}
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  "& fieldset": { borderColor: "background.dark" },
+                  "&:hover fieldset": { borderColor: "background.dark" },
+                  "&.Mui-focused fieldset": { borderColor: "background.dark" },
+                },
+              }}
             />
           </Grid>
         </Grid>
