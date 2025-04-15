@@ -77,7 +77,7 @@ export class AuthService {
           .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
           .join('')
       );
-
+      
       return JSON.parse(jsonPayload);
     } catch (e) {
       console.error('Error decoding token', e);
@@ -100,9 +100,11 @@ export class AuthService {
   // Check if the user has admin role
   isAdmin(): boolean {
     return this.getUserRole() === 'admin';
+     
   }
   isInstructor(): boolean {
     return this.getUserRole() === 'instructor';
+    
   }
 
   getProfile(): Observable<any> {

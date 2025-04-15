@@ -79,10 +79,7 @@ export class UserManagementComponent implements OnInit {
       ],
       password: [
         '',
-        [
-          Validators.required,
-          CustomValidators.passwordStrengthValidator(),
-        ],
+        [Validators.required, CustomValidators.passwordStrengthValidator()],
       ],
     });
 
@@ -99,18 +96,18 @@ export class UserManagementComponent implements OnInit {
       ],
       password: [
         '',
-        [
-          Validators.required,
-          CustomValidators.passwordStrengthValidator(),
-        ],
+        [Validators.required, CustomValidators.passwordStrengthValidator()],
       ],
     });
   }
 
   ngOnInit(): void {
     // Load users data
+    console.log('started in on init');
+
     this.loadUsers();
 
+    console.log('started in after call load users');
     // When query params change, we update the page number
     this.route.queryParams.subscribe((params) => {
       const page = +params['page'] || 1;
@@ -180,6 +177,12 @@ export class UserManagementComponent implements OnInit {
     });
   }
 
+  selectTab(tab: 'all' | 'students' | 'instructors' | 'admins'): void {
+    this.selectedTab = tab;
+    this.currentPage = 1; // Reset to first page when changing tabs
+    this.updateUrlWithoutReload(this.currentPage);
+  }
+
   get filteredUsers(): User[] {
     let filtered = this.users;
 
@@ -201,10 +204,6 @@ export class UserManagementComponent implements OnInit {
     }
 
     return filtered;
-  }
-
-  selectTab(tab: 'all' | 'students' | 'instructors' | 'admins'): void {
-    this.selectedTab = tab;
   }
 
   @HostListener('document:click', ['$event'])
@@ -556,5 +555,31 @@ export class UserManagementComponent implements OnInit {
     const url = new URL(window.location.href);
     url.searchParams.set('page', page.toString());
     window.history.pushState({}, '', url.toString());
+  }
+
+  getRoleClass(role: string): string {
+    switch (role.toLowerCase()) {
+      case 'admin':
+        return 'primary';
+      case 'instructor':
+        return 'info';
+      case 'student':
+        return 'secondary';
+      default:
+        return 'secondary';
+    }
+  }
+
+  getStatusClass(status: string): string {
+    switch (status.toLowerCase()) {
+      case 'active':
+        return 'success';
+      case 'inactive':
+        return 'warning';
+      case 'suspended':
+        return 'danger';
+      default:
+        return 'secondary';
+    }
   }
 }

@@ -33,7 +33,7 @@ export class AdminLoginComponent implements OnInit {
   ) {
     this.loginForm = this.fb.group({
       email: [
-        'kasem@gmail.com',
+        '',
         [
           Validators.email,
           Validators.required,

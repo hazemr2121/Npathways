@@ -26,7 +26,8 @@ export class InstructorService {
   constructor(private http: HttpClient, private authService: AuthService) {}
 
   getAllInstructors(): Observable<Instructor[]> {
-    if (!this.authService.isAdmin()) {
+    
+    if (this.authService.isAdmin()) {
       return this.http.get<Instructor[]>(
         `${this.BASE_URL}/admin/AllInstructor`
       );

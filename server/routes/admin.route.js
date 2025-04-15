@@ -77,12 +77,14 @@ router.get(
   "/AllInstructor",
   protectRoutes,
   allowTo("admin"),
+  // authenticationInstructor,
   AdminControlller.getAllInstructors
 );
 router.get(
   "/instructors/:id",
-  protectRoutes,
-  allowTo("admin"),
+  // protectRoutes,
+  // allowTo("admin"),
+  authenticationInstructor,
   AdminControlller.getOneInstructor
 );
 router.post(
