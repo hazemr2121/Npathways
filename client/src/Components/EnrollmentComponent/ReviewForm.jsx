@@ -607,7 +607,7 @@ const ReviewForm = () => {
         <Button
           variant="contained"
           color="error"
-          onClick={() => navigate("/enrollment/entryExam")}
+          onClick={() => navigate("/enrollment/personal-details")}
           size={isSmallScreen ? "small" : "medium"}
           fullWidth={isSmallScreen}
         >
