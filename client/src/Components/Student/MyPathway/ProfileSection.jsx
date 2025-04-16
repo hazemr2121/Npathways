@@ -52,6 +52,34 @@ const COUNTRIES = [
   { code: "ER", label: "Eritrea", phoneCode: "+291" },
 ];
 
+// Nationalities list matching country labels for consistency
+const NATIONALITIES = [
+  "Egyptian",
+  "Saudi",
+  "Emirati",
+  "Algerian",
+  "Iraqi",
+  "Moroccan",
+  "Sudanese",
+  "Syrian",
+  "Tunisian",
+  "Jordanian",
+  "Lebanese",
+  "Libyan",
+  "Palestinian",
+  "Omani",
+  "Kuwaiti",
+  "Qatari",
+  "Bahraini",
+  "Yemeni",
+  "Mauritanian",
+  "Somalian",
+  "Djiboutian",
+  "Comorian",
+  "Chadian",
+  "Eritrean",
+];
+
 const PHONE_LENGTH_REQUIREMENTS = {
   EG: { min: 11, max: 11 },
   SA: { min: 9, max: 9 },
@@ -106,6 +134,33 @@ const PHONE_PREFIX_PATTERNS = {
   ER: /^(1|7|8)\d{5}$/,
 };
 
+const FACULTIES = [
+  "Computer Science",
+  "Engineering",
+  "Medicine",
+  "Pharmacy",
+  "Dentistry",
+  "Science",
+  "Commerce",
+  "Arts",
+  "Law",
+  "Education",
+  "Agriculture",
+  "Veterinary Medicine",
+  "Physical Therapy",
+  "Nursing",
+  "Economics and Political Science",
+  "Mass Communication",
+  "Applied Arts",
+  "Languages",
+  "Tourism and Hotels",
+  "Archaeology",
+  "Specific Education",
+  "Kindergarten",
+  "Home Economics",
+  "Fine Arts",
+];
+
 export default function ProfileSection() {
   const { isAuthenticated } = useContext(AuthContext);
   const userId = localStorage.getItem("userId");
@@ -119,16 +174,17 @@ export default function ProfileSection() {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [showEnrollmentFields, setShowEnrollmentFields] = useState(false);
 
+  // Updated validation schema with min 3 characters for text fields
   const validationSchema = yup.object({
     firstName: yup
       .string()
       .required("First name is required")
-      .min(2, "First name must be at least 2 characters")
+      .min(3, "First name must be at least 3 characters") // Updated to 3 chars
       .matches(/^[A-Za-z]+$/, "First name can only contain letters"),
     lastName: yup
       .string()
       .required("Last name is required")
-      .min(2, "Last name must be at least 2 characters")
+      .min(3, "Last name must be at least 3 characters") // Updated to 3 chars
       .matches(/^[A-Za-z]+$/, "Last name can only contain letters"),
     gpa: yup
       .number()
@@ -137,12 +193,21 @@ export default function ProfileSection() {
       .test(
         "decimal-places",
         "GPA can have at most 2 decimal places",
-        (value) =>
-          value === undefined || /^\d+(\.\d{0,2})?$/.test(value.toString())
-      ),
+        (value) => {
+          if (!value && value !== 0) return true; // Handle empty string or null
+          return /^\d+(\.\d{0,2})?$/.test(value.toString());
+        }
+      )
+      .typeError("GPA must be a number"), // Added type error message
     country: yup.string().required("Country is required"),
-    city: yup.string(),
-    street: yup.string(),
+    city: yup
+      .string()
+      .min(3, "City name must be at least 3 characters")
+      .required("City is required"), // Added min length
+    street: yup
+      .string()
+      .min(3, "Street name must be at least 3 characters")
+      .required("Street is required"), // Added min length
     phoneCountry: yup.string().required("Phone country code is required"),
     phone: yup
       .string()
@@ -271,12 +336,16 @@ export default function ProfileSection() {
           });
         }
       }),
-    nationality: yup.string(),
+    nationality: yup.string().required("Nationality is required"),
     dateOfBirth: yup
       .date()
-      .min(new Date(1980, 0, 1), "Birth Of Data must be after 1980")
-      .max(new Date(), "Birth of Data can't be in the future"),
-    facultyName: yup.string(),
+      .required("Date of birth is required") // Added required validation
+      .min(new Date(1980, 0, 1), "Birth date must be after 1980")
+      .max(new Date(), "Birth date can't be in the future")
+      .typeError("Please enter a valid date"), // Added type error message
+    facultyName: yup
+      .string()
+      .min(3, "Faculty name must be at least 3 characters"), // Added min length
   });
 
   const formik = useFormik({
@@ -294,6 +363,8 @@ export default function ProfileSection() {
       facultyName: "",
     },
     validationSchema: validationSchema,
+    validateOnChange: true, // Validate on each change
+    validateOnBlur: true, // Validate on blur
     onSubmit: async (values) => {
       try {
         // Update user data (first name, last name)
@@ -481,6 +552,22 @@ export default function ProfileSection() {
     setIsEditing(false);
   };
 
+  // Function to find country code from label
+  const getCountryCodeFromLabel = (label) => {
+    if (!label) return "";
+    const country = COUNTRIES.find(
+      (c) => c.label.toLowerCase() === label.toLowerCase()
+    );
+    return country ? country.code : "";
+  };
+
+  // Function to get country label from code
+  const getCountryLabelFromCode = (code) => {
+    if (!code) return "";
+    const country = COUNTRIES.find((c) => c.code === code);
+    return country ? country.label : code;
+  };
+
   if (!isAuthenticated) return <Typography>Please log in.</Typography>;
   if (loading) return <CircularProgress />;
   if (error) return <Alert severity="error">{error}</Alert>;
@@ -490,12 +577,19 @@ export default function ProfileSection() {
     return country ? country.phoneCode : "";
   };
 
+  // Handle field validation on blur
+  const handleFieldBlur = (field) => {
+    return (e) => {
+      formik.handleBlur(e); // Run Formik's handleBlur
+      formik.validateField(field); // Force field validation
+    };
+  };
+
   return (
     <Box
       sx={{
         display: "flex",
         justifyContent: "center",
-        alignItems: "center",
         minHeight: "100vh",
       }}
     >
@@ -523,9 +617,6 @@ export default function ProfileSection() {
                 mx: "auto",
               }}
             />
-            {/* <Typography variant="h6" mb={2}>
-              {userData.track} - Level {userData.level}
-            </Typography> */}
             <Typography
               color={userData.status === "active" ? "green" : "red"}
               mb={2}
@@ -545,7 +636,7 @@ export default function ProfileSection() {
                   label="First Name"
                   value={formik.values.firstName}
                   onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
+                  onBlur={handleFieldBlur("firstName")}
                   disabled={!isEditing}
                   error={
                     formik.touched.firstName && Boolean(formik.errors.firstName)
@@ -561,7 +652,7 @@ export default function ProfileSection() {
                   label="Last Name"
                   value={formik.values.lastName}
                   onChange={formik.handleChange}
-                  onBlur={formik.handleBlur}
+                  onBlur={handleFieldBlur("lastName")}
                   disabled={!isEditing}
                   error={
                     formik.touched.lastName && Boolean(formik.errors.lastName)
@@ -583,35 +674,158 @@ export default function ProfileSection() {
                     <Divider sx={{ my: 2 }} />
                     <Typography variant="h6">Enrollment Information</Typography>
 
-                    {/* Additional fields */}
-                    {[
-                      "nationality",
-                      "country",
-                      "city",
-                      "street",
-                      "facultyName",
-                      "gpa",
-                    ].map((field) => (
-                      <TextField
-                        key={field}
-                        name={field}
-                        label={
-                          field.charAt(0).toUpperCase() +
-                          field.slice(1).replace(/([A-Z])/g, " $1")
-                        }
-                        value={formik.values[field]}
+                    {/* Nationality Dropdown */}
+                    <FormControl
+                      fullWidth
+                      error={
+                        formik.touched.nationality &&
+                        Boolean(formik.errors.nationality)
+                      }
+                    >
+                      <InputLabel id="nationality-label">
+                        Nationality
+                      </InputLabel>
+                      <Select
+                        labelId="nationality-label"
+                        id="nationality"
+                        name="nationality"
+                        value={formik.values.nationality}
                         onChange={formik.handleChange}
-                        onBlur={formik.handleBlur}
+                        onBlur={handleFieldBlur("nationality")}
                         disabled={!isEditing}
-                        error={
-                          formik.touched[field] && Boolean(formik.errors[field])
-                        }
-                        helperText={
-                          formik.touched[field] && formik.errors[field]
-                        }
-                        fullWidth
-                      />
-                    ))}
+                        label="Nationality"
+                        sx={{ textAlign: "left" }}
+                      >
+                        <MenuItem value="">
+                          <em>Select a nationality</em>
+                        </MenuItem>
+                        {NATIONALITIES.map((nationality) => (
+                          <MenuItem key={nationality} value={nationality}>
+                            {nationality}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                      {formik.touched.nationality &&
+                        formik.errors.nationality && (
+                          <FormHelperText>
+                            {formik.errors.nationality}
+                          </FormHelperText>
+                        )}
+                    </FormControl>
+
+                    {/* Country Dropdown */}
+                    <FormControl
+                      fullWidth
+                      error={
+                        formik.touched.country && Boolean(formik.errors.country)
+                      }
+                    >
+                      <InputLabel id="country-label">Country</InputLabel>
+                      <Select
+                        labelId="country-label"
+                        id="country"
+                        name="country"
+                        sx={{ textAlign: "left" }}
+                        value={formik.values.country}
+                        onChange={(e) => {
+                          // Update country and phone country together for consistency
+                          formik.setFieldValue("country", e.target.value);
+                        }}
+                        onBlur={handleFieldBlur("country")}
+                        disabled={!isEditing}
+                        label="Country"
+                      >
+                        <MenuItem value="">
+                          <em>Select a country</em>
+                        </MenuItem>
+                        {COUNTRIES.map((country) => (
+                          <MenuItem key={country.code} value={country.label}>
+                            {country.label}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                      {formik.touched.country && formik.errors.country && (
+                        <FormHelperText>{formik.errors.country}</FormHelperText>
+                      )}
+                    </FormControl>
+
+                    <TextField
+                      name="city"
+                      label="City"
+                      value={formik.values.city}
+                      onChange={formik.handleChange}
+                      onBlur={handleFieldBlur("city")}
+                      disabled={!isEditing}
+                      error={formik.touched.city && Boolean(formik.errors.city)}
+                      helperText={formik.touched.city && formik.errors.city}
+                      fullWidth
+                    />
+
+                    <TextField
+                      name="street"
+                      label="Street"
+                      value={formik.values.street}
+                      onChange={formik.handleChange}
+                      onBlur={handleFieldBlur("street")}
+                      disabled={!isEditing}
+                      error={
+                        formik.touched.street && Boolean(formik.errors.street)
+                      }
+                      helperText={formik.touched.street && formik.errors.street}
+                      fullWidth
+                    />
+
+                    <FormControl
+                      fullWidth
+                      error={
+                        formik.touched.facultyName &&
+                        Boolean(formik.errors.facultyName)
+                      }
+                    >
+                      <InputLabel id="faculty-name-label">
+                        Faculty Name
+                      </InputLabel>
+                      <Select
+                        labelId="faculty-name-label"
+                        id="facultyName"
+                        name="facultyName"
+                        value={formik.values.facultyName}
+                        onChange={formik.handleChange}
+                        onBlur={handleFieldBlur("facultyName")}
+                        disabled={!isEditing}
+                        sx={{ textAlign: "left" }}
+                        label="Faculty Name"
+                      >
+                        <MenuItem value="">
+                          <em>Select a faculty</em>
+                        </MenuItem>
+                        {FACULTIES.map((faculty) => (
+                          <MenuItem key={faculty} value={faculty}>
+                            {faculty}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                      {formik.touched.facultyName &&
+                        formik.errors.facultyName && (
+                          <FormHelperText>
+                            {formik.errors.facultyName}
+                          </FormHelperText>
+                        )}
+                    </FormControl>
+
+                    <TextField
+                      name="gpa"
+                      label="GPA"
+                      type="number"
+                      inputProps={{ step: 0.01 }}
+                      value={formik.values.gpa}
+                      onChange={formik.handleChange}
+                      onBlur={handleFieldBlur("gpa")}
+                      disabled={!isEditing}
+                      error={formik.touched.gpa && Boolean(formik.errors.gpa)}
+                      helperText={formik.touched.gpa && formik.errors.gpa}
+                      fullWidth
+                    />
 
                     {/* Phone Country Selector */}
                     <FormControl
@@ -629,11 +843,12 @@ export default function ProfileSection() {
                         id="phoneCountry"
                         name="phoneCountry"
                         value={formik.values.phoneCountry}
+                        sx={{ textAlign: "left" }}
                         onChange={(e) => {
                           formik.setFieldValue("phoneCountry", e.target.value);
                           formik.setFieldValue("phone", ""); // Reset phone when country changes
                         }}
-                        onBlur={formik.handleBlur}
+                        onBlur={handleFieldBlur("phoneCountry")}
                         disabled={!isEditing}
                         label="Phone Country"
                       >
@@ -662,7 +877,7 @@ export default function ProfileSection() {
                         label="Phone Number"
                         value={formik.values.phone}
                         onChange={formik.handleChange}
-                        onBlur={formik.handleBlur}
+                        onBlur={handleFieldBlur("phone")}
                         disabled={!isEditing}
                         error={
                           formik.touched.phone && Boolean(formik.errors.phone)
@@ -681,7 +896,9 @@ export default function ProfileSection() {
                       onChange={(date) =>
                         formik.setFieldValue("dateOfBirth", date)
                       }
-                      onBlur={formik.handleBlur}
+                      onBlur={() =>
+                        formik.setFieldTouched("dateOfBirth", true, true)
+                      }
                       disabled={!isEditing}
                       dateFormat="yyyy-MM-dd"
                       placeholderText="Select date of birth"
