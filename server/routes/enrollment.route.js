@@ -27,6 +27,15 @@ router.post(
   authentication,
   EnrollmentController.createEnrollment
 );
+
+// user/:userId
+router.get(
+  "/user/:userId",
+  authentication,
+  EnrollmentController.getEnrollmentsByUserId
+);
+
+
 router.put(
   "/updateEnrollment/:id",
   verifyInput,
