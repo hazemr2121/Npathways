@@ -313,8 +313,8 @@ export default function PersonalDetailsForm() {
       }),
     address: Yup.object({
       country: Yup.string().required("Country is required"),
-      city: Yup.string(),
-      street: Yup.string(),
+      city: Yup.string().required("City is required"),
+      street: Yup.string().required("Street is required"),
     }),
     faculty: Yup.string().required("Faculty is required"),
     facultyName: Yup.string().required("Faculty is required"),
