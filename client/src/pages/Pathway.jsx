@@ -146,6 +146,13 @@ function Pathway() {
   const { user } = useContext(AuthContext);
   const [loadingExams, setLoadingExams] = useState(true);
 
+  // First, let's add a state to track which courses have been viewed
+  const [viewedCourses, setViewedCourses] = useState(() => {
+    // Try to get viewed courses from localStorage
+    const saved = localStorage.getItem("viewedCourses");
+    return saved ? JSON.parse(saved) : [];
+  });
+
   // Enhanced fetchSubmittedExams function to ensure cookies are sent
   useEffect(() => {
     const fetchSubmittedExams = async () => {
@@ -201,10 +208,20 @@ function Pathway() {
     fetchPathway();
   }, [id]);
 
-  // Enhanced function to determine course status based on exams
-  const getCourseStatus = (course) => {
+  // Update the getCourseStatus function to consider viewed courses
+  const getCourseStatus = (course, index) => {
+    // If course has no required exams and has been viewed, mark as completed
     if (!course.requiredExams || course.requiredExams.length === 0) {
+      if (viewedCourses.includes(course._id)) {
+        return "completed";
+      }
       return course.status || "not-started";
+    }
+
+    // Check if a later course is completed (cascade completion)
+    const isCascadedComplete = isCascadeCompletedCourse(index);
+    if (isCascadedComplete) {
+      return "completed";
     }
 
     const examStatuses = course.requiredExams.map((exam) =>
@@ -220,12 +237,61 @@ function Pathway() {
     return course.status || "not-started";
   };
 
+  // Check if any course after this one is completed, which would cascade completion
+  const isCascadeCompletedCourse = (courseIndex) => {
+    if (
+      !pathway?.data?.courses ||
+      courseIndex === pathway.data.courses.length - 1
+    ) {
+      return false;
+    }
+
+    for (let i = courseIndex + 1; i < pathway.data.courses.length; i++) {
+      const laterCourse = pathway.data.courses[i];
+
+      // If this later course is completed naturally (not via cascade)
+      if (isNaturallyCompleted(laterCourse)) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  // Helper to check if a course is completed by its own criteria, not cascade
+  const isNaturallyCompleted = (course) => {
+    if (!course.requiredExams || course.requiredExams.length === 0) {
+      return viewedCourses.includes(course._id);
+    }
+
+    const examStatuses = course.requiredExams.map((exam) =>
+      getExamStatus(exam)
+    );
+    const passedExams = examStatuses.filter((status) => status.passed).length;
+    return passedExams === course.requiredExams.length;
+  };
+
+  // Handle view course button click
+  const handleViewCourse = (courseId) => {
+    // Add this course to viewed courses if not already there
+    if (!viewedCourses.includes(courseId)) {
+      const updatedViewedCourses = [...viewedCourses, courseId];
+      setViewedCourses(updatedViewedCourses);
+      // Save to localStorage
+      localStorage.setItem(
+        "viewedCourses",
+        JSON.stringify(updatedViewedCourses)
+      );
+    }
+    // Navigate to the course
+    navigate(`/courseContent/${courseId}`);
+  };
+
   // Calculate pathway completion using the enhanced course status
   const calculateCompletion = (courses) => {
     if (!courses?.length) return 0;
 
     const completedCourses = courses.filter(
-      (course) => getCourseStatus(course) === "completed"
+      (course, index) => getCourseStatus(course, index) === "completed"
     );
 
     return Math.round((completedCourses.length / courses.length) * 100);
@@ -235,18 +301,29 @@ function Pathway() {
   const getExamStatus = (exam) => {
     if (!exam || !exam._id) return { passed: false, attempted: false };
 
-    const submitted = submittedExams.find(
+    // Find all submissions for this exam
+    const submissions = submittedExams.filter(
       (submittedExam) => submittedExam.examId === exam._id
     );
 
+    // Check if any submission has passed
+    const anyPassed = submissions.some((submission) => submission.passed);
+
+    // Get the highest score from all attempts
+    const highestScore =
+      submissions.length > 0
+        ? Math.max(...submissions.map((submission) => submission.score || 0))
+        : 0;
+
     return {
-      passed: submitted?.passed || false,
-      attempted: !!submitted,
-      score: submitted?.score,
+      passed: anyPassed,
+      attempted: submissions.length > 0,
+      score: highestScore,
+      attempts: submissions.length,
     };
   };
 
-  // NEW FUNCTION: Check if prerequisites are complete for a course at a specific index
+  // Check if prerequisites are complete for a course at a specific index
   const arePrerequisitesComplete = (courseIndex) => {
     // If it's the first course or no courses data, no prerequisites to check
     if (courseIndex === 0 || !pathway?.data?.courses) return true;
@@ -303,7 +380,7 @@ function Pathway() {
         : 0;
 
     // Use the enhanced status determination
-    const badgeStatus = getCourseStatus(course);
+    const badgeStatus = getCourseStatus(course, index);
 
     // Check if prerequisites are complete for this course
     const prerequisitesComplete = arePrerequisitesComplete(index);
@@ -562,7 +639,7 @@ function Pathway() {
                   variant="contained"
                   color="primary"
                   size="medium"
-                  onClick={() => navigate(`/courseContent/${_id}`)}
+                  onClick={() => handleViewCourse(_id)} // Use the new handler
                   endIcon={<LaunchIcon />}
                   aria-label={`View details of ${name}`}
                   sx={{
