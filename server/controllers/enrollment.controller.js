@@ -110,6 +110,34 @@ class EnrollmentController {
       res.status(500).json({ error: "Internal server error" });
     }
   }
+
+  static async getEnrollmentsByUserId(req, res) {
+    try {
+      const { userId } = req.params;
+
+      if (!userId.match(/^[0-9a-fA-F]{24}$/)) {
+        return res.status(400).json({ error: "Invalid user ID" });
+      }
+
+      const enrollments = await EnrollmentModel.find({ userId }).populate({
+        path: "userId",
+        select: "pathways",
+        populate: {
+          path: "pathways",
+          select: "name",
+        },
+      });
+      
+      if (!enrollments || enrollments.length === 0) {
+        return res.status(404).json({ error: "No enrollments found for this user" });
+      }
+      
+      res.status(200).json(enrollments);
+    } catch (error) {
+      console.error(`Error in enrollment controller: ${error}`);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  }
 }
 
 export default EnrollmentController;
