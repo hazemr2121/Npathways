@@ -319,11 +319,30 @@ export class ExamDetailsComponent implements OnInit {
     return isValid;
   }
 
-  showErrorNotification(message: string): void {
-    this.snackBar.open(message, 'Close', {
-      duration: 5000,
+
+
+  private showErrorNotification(message: string): void {
+    const snackBarRef = this.snackBar.open(message, 'Close', {
+      duration: 0,
+      panelClass: ['error-snackbar', 'multiline-snackbar'],
+      verticalPosition: 'top',
+      horizontalPosition: 'right',
+      politeness: 'assertive'
+    });
+
+    snackBarRef.onAction().subscribe(() => {
+      snackBarRef.dismiss();
     });
   }
+
+  // private showSuccessNotification(message: string): void {
+  //   this.snackBar.open(message, 'Close', {
+  //     duration: 3000,
+  //     panelClass: ['success-snackbar'],
+  //     verticalPosition: 'top',
+  //     horizontalPosition: 'right',
+  //   });
+  // }
 
   saveExam(): void {
     if (this.examForm.valid && this.validateAnswers()) {
