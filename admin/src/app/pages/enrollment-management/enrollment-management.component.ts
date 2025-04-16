@@ -12,7 +12,15 @@ import { Enrollment } from './enrollment.interface';
   standalone: true,
   imports: [CommonModule, FormsModule, EnrollmentDetailsComponent],
   templateUrl: './enrollment-management.component.html',
-  styleUrl: './enrollment-management.component.css'
+  styleUrl: './enrollment-management.component.css',
+  template: `
+    <app-enrollment-details
+      *ngIf="showDetailsModal"
+      [enrollment]="selectedEnrollment"
+      (close)="closeDetailsModal()"
+      (refreshEnrollments)="loadEnrollments()">
+    </app-enrollment-details>
+  `
 })
 export class EnrollmentManagementComponent implements OnInit {
   searchTerm: string = '';

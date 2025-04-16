@@ -84,7 +84,17 @@ interface PathwayResponse {
               </div>
               <div class="info-item">
                 <label>Requested Pathway</label>
-                <p>{{pathwayName || 'No Requested Pathway'}}</p>
+                <div class="pathway-approval">
+                  <p>{{pathwayName || 'No Requested Pathway'}}</p>
+                  <button
+                    *ngIf="enrollment.pathway && !isApproved"
+                    class="approve-btn"
+                    (click)="approvePathway()"
+                    [disabled]="isApproving">
+                    {{isApproving ? 'Approving...' : 'Approve Pathway'}}
+                  </button>
+                  <span *ngIf="isApproved" class="approved-badge">Approved</span>
+                </div>
               </div>
             </div>
           </div>
@@ -256,18 +266,56 @@ interface PathwayResponse {
       color: #707EAE;
       margin: 0;
     }
+
+    .pathway-approval {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .approve-btn {
+      background-color: #4318FF;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: background-color 0.2s;
+    }
+
+    .approve-btn:hover {
+      background-color: #3311DB;
+    }
+
+    .approve-btn:disabled {
+      background-color: #A3AED0;
+      cursor: not-allowed;
+    }
+
+    .approved-badge {
+      background-color: #05CD99;
+      color: white;
+      padding: 0.25rem 0.75rem;
+      border-radius: 4px;
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
   `]
 })
 export class EnrollmentDetailsComponent implements OnInit {
   @Input() enrollment: Enrollment | null = null;
   @Output() close = new EventEmitter<void>();
   pathwayName: string = '';
+  isApproving: boolean = false;
+  isApproved: boolean = false;
 
   constructor(private pathwayService: PathwayService) {}
 
   ngOnInit() {
     if (this.enrollment?.pathway) {
       this.loadPathwayName();
+      this.checkApprovalStatus();
     }
   }
 
@@ -283,5 +331,36 @@ export class EnrollmentDetailsComponent implements OnInit {
         }
       });
     }
+  }
+
+  private checkApprovalStatus() {
+    if (this.enrollment?.userId.pathways) {
+      this.isApproved = this.enrollment.userId.pathways.some(p => p._id === this.enrollment?.pathway);
+    }
+  }
+
+  approvePathway() {
+    if (!this.enrollment?.userId._id || !this.enrollment?.pathway) {
+      return;
+    }
+
+    this.isApproving = true;
+    this.pathwayService.enrollUserByAdmin( this.enrollment.pathway, this.enrollment.userId._id).subscribe({
+      next: (response) => {
+        this.isApproved = true;
+        this.isApproving = false;
+        // Refresh the enrollment data to show updated pathways
+        if (this.enrollment) {
+          this.enrollment.userId.pathways.push({
+            _id: this.enrollment.pathway,
+            name: this.pathwayName
+          });
+        }
+      },
+      error: (error) => {
+        console.error('Error approving pathway:', error);
+        this.isApproving = false;
+      }
+    });
   }
 }
