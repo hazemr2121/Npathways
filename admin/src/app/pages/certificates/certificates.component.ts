@@ -9,6 +9,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { EditCertificateDialogComponent } from './edit-certificate-dialog.component';
 import { ConfirmDialogComponent } from './confirm-dialog.component';
 import { CertificateService } from '../../services/certificate.service';
+import { PathwayService, Pathway } from '../../services/pathway.service';
 // import { UserService } from '../../services/user.service';
 // --- Placeholder Import ---
 // import { CertificatesService, Certificate } from '../../services/certificates.service';
@@ -18,7 +19,8 @@ export interface Certificate {
   _id: string;
   name: string;
   description: string;
-  course: string; // This is the course ID
+  course?: string; // This is the course ID
+  pathway?: string; // This is the pathway ID
   createdAt: string;
   __v: number;
 }
@@ -44,17 +46,20 @@ function hasMinimumWords(minWords: number) {
     MatDialogModule,
     MatButtonModule
   ],
-  providers: [CertificatesService, CertificateService],
+  providers: [CertificatesService, CertificateService, PathwayService],
   templateUrl: './certificates.component.html',
   styleUrls: ['./certificates.component.css']
 })
 export class CertificateComponent implements OnInit {
   // --- Form Properties ---
   courses: Course[] = [];
+  pathways: Pathway[] = [];
   users: any[] = [];
-  selectedCourseId: string | null = null; // For creation AND for filtering users for granting
+  selectedCourseId: string | null = null;
+  selectedPathwayId: string | null = null;
   certificateName: string = '';
   certificateDescription: string = '';
+  assignmentType: 'course' | 'pathway' = 'course';
 
   // Validation states
   isDescriptionValid: boolean = true;
@@ -89,11 +94,13 @@ export class CertificateComponent implements OnInit {
     private snackBar: MatSnackBar,
     private dialog: MatDialog,
     private certificateService: CertificateService,
+    private pathwayService: PathwayService,
     // private userService: UserService
   ) {}
 
   ngOnInit(): void {
     this.loadCourses();
+    this.loadPathways();
     this.loadCertificates();
   }
 
@@ -101,6 +108,21 @@ export class CertificateComponent implements OnInit {
     this.courseService.getCourses().subscribe({
       next: (data) => { this.courses = data; },
       error: (err) => console.error('Error loading courses:', err)
+    });
+  }
+
+  loadPathways(): void {
+    this.pathwayService.getAllPathways().subscribe({
+      next: (response) => {
+        this.pathways = response.data;
+      },
+      error: (err) => {
+        console.error('Error loading pathways:', err);
+        this.snackBar.open('Error loading pathways', 'Close', {
+          duration: 3000,
+          panelClass: ['error-snackbar']
+        });
+      }
     });
   }
 
@@ -144,7 +166,7 @@ export class CertificateComponent implements OnInit {
 
     // Find the selected certificate
     const selectedCertificate = this.certificates.find(cert => cert._id === certificateId);
-    if (selectedCertificate) {
+    if (selectedCertificate && selectedCertificate.course) {
       this.isLoadingUsers = true;
       console.log('Loading users for Course ID:', selectedCertificate.course);
       this.courseService.getUsersInCourse(selectedCertificate.course).subscribe({
@@ -206,8 +228,27 @@ export class CertificateComponent implements OnInit {
 
   // --- Certificate Creation ---
   createCertificate(): void {
-    if (!this.selectedCourseId || !this.certificateName || !this.certificateDescription) {
-      console.error('Name, Description, and Course must be provided');
+    if (!this.certificateName || !this.certificateDescription) {
+      this.snackBar.open('Name and Description are required', 'Close', {
+        duration: 3000,
+        panelClass: ['error-snackbar']
+      });
+      return;
+    }
+
+    if (this.assignmentType === 'course' && !this.selectedCourseId) {
+      this.snackBar.open('Please select a course', 'Close', {
+        duration: 3000,
+        panelClass: ['error-snackbar']
+      });
+      return;
+    }
+
+    if (this.assignmentType === 'pathway' && !this.selectedPathwayId) {
+      this.snackBar.open('Please select a pathway', 'Close', {
+        duration: 3000,
+        panelClass: ['error-snackbar']
+      });
       return;
     }
 
@@ -216,9 +257,7 @@ export class CertificateComponent implements OnInit {
     if (wordCount < 5) {
       this.snackBar.open('Description must contain at least 5 words', 'Close', {
         duration: 3000,
-        panelClass: ['error-snackbar'],
-        verticalPosition: 'top',
-        horizontalPosition: 'right'
+        panelClass: ['error-snackbar']
       });
       return;
     }
@@ -227,25 +266,36 @@ export class CertificateComponent implements OnInit {
     const certificateData = {
       name: this.certificateName,
       description: this.certificateDescription,
-      course: this.selectedCourseId, // Note: API expects 'course' not 'courseId'
+      course: this.assignmentType === 'course' ? this.selectedCourseId || undefined : undefined,
+      pathway: this.assignmentType === 'pathway' ? this.selectedPathwayId || undefined : undefined
     };
-    console.log('Creating certificate with data:', certificateData);
 
     this.certificatesService.createCertificate(certificateData).subscribe({
       next: (newCertificate) => {
         console.log('Certificate created successfully:', newCertificate);
-        this.loadCertificates(); // Reload the list
+        this.loadCertificates();
         // Reset form
         this.certificateName = '';
         this.certificateDescription = '';
-        // Keep course selected maybe? Reset if needed: this.selectedCourseId = null;
+        this.selectedCourseId = null;
+        this.selectedPathwayId = null;
         this.isCreating = false;
-        // Add success feedback
+        this.snackBar.open('Certificate created successfully', 'Close', {
+          duration: 3000,
+          panelClass: ['success-snackbar'],
+          verticalPosition: 'top',
+          horizontalPosition: 'right',
+        });
       },
       error: (err) => {
         console.error('Error creating certificate:', err);
         this.isCreating = false;
-        // Add error feedback
+        this.snackBar.open(err.error?.message || 'Error creating certificate', 'Close', {
+          duration: 3000,
+          panelClass: ['error-snackbar'],
+          verticalPosition: 'top',
+          horizontalPosition: 'right',
+        });
       }
     });
   }
@@ -434,5 +484,20 @@ export class CertificateComponent implements OnInit {
     if (!courseId) return 'N/A';
     const course = this.courses.find(c => c._id === courseId);
     return course ? course.name : 'Unknown Course';
+  }
+
+  // Helper methods for certificate filtering
+  getCourseCertificates(): CertificateType[] {
+    return this.certificates.filter(cert => cert.course);
+  }
+
+  getPathwayCertificates(): CertificateType[] {
+    return this.certificates.filter(cert => cert.pathway);
+  }
+
+  getPathwayName(pathwayId: string | undefined): string {
+    if (!pathwayId) return 'N/A';
+    const pathway = this.pathways.find(p => p._id === pathwayId);
+    return pathway ? pathway.name : 'Unknown Pathway';
   }
 }

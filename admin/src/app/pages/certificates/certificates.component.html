@@ -24,7 +24,20 @@
       </div>
     </div>
 
-    <div>
+    <div class="assignment-type-buttons">
+      <button (click)="assignmentType = 'course'"
+              [class.active]="assignmentType === 'course'"
+              [disabled]="isCreating">
+        Add Course
+      </button>
+      <button (click)="assignmentType = 'pathway'"
+              [class.active]="assignmentType === 'pathway'"
+              [disabled]="isCreating">
+        Add Pathway
+      </button>
+    </div>
+
+    <div *ngIf="assignmentType === 'course'">
       <label for="courseSelectCreate">Assign to Course:</label>
       <select id="courseSelectCreate" [(ngModel)]="selectedCourseId" required>
         <option [ngValue]="null" disabled>Select a Course</option>
@@ -34,8 +47,20 @@
       </select>
     </div>
 
+    <div *ngIf="assignmentType === 'pathway'">
+      <label for="pathwaySelectCreate">Assign to Pathway:</label>
+      <select id="pathwaySelectCreate" [(ngModel)]="selectedPathwayId" required>
+        <option [ngValue]="null" disabled>Select a Pathway</option>
+        <option *ngFor="let pathway of pathways" [value]="pathway._id">
+          {{ pathway.name }}
+        </option>
+      </select>
+    </div>
+
     <button (click)="createCertificate()"
-            [disabled]="!selectedCourseId || !certificateName || !certificateDescription || isCreating">
+            [disabled]="!certificateName || !certificateDescription || isCreating ||
+                      (assignmentType === 'course' && !selectedCourseId) ||
+                      (assignmentType === 'pathway' && !selectedPathwayId)">
       {{ isCreating ? 'Creating...' : 'Create Certificate' }}
     </button>
   </div>
@@ -75,38 +100,77 @@
       </div>
     </div>
 
-    <!-- Certificates Table -->
-    <table class="text-dark overflow-x-auto" *ngIf="!isLoadingCertificates && certificates.length > 0">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Description</th>
-          <th>Associated Course</th>
-          <th>Created At</th>
-          <th class="text-center">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let cert of certificates">
-          <td>{{ cert.name }}</td>
-          <td>{{ cert.description }}</td>
-          <td>{{ getCourseName(cert.course) }}</td>
-          <td>{{ cert.createdAt | date:'medium' }}</td>
-          <td class="d-flex gap-2">
-            <button class="edit-button btn "
-                    (click)="startEdit(cert)"
-                    [disabled]="isUpdating === cert._id || editingCertificate?._id === cert._id">
-              Edit
-            </button>
-            <button class="delete-button btn "
-                    (click)="deleteCertificate(cert._id)"
-                    [disabled]="isDeleting === cert._id || editingCertificate?._id === cert._id">
-              {{ isDeleting === cert._id ? 'Deleting...' : 'Delete' }}
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <!-- Course Certificates Table -->
+    <div *ngIf="!isLoadingCertificates && getCourseCertificates().length > 0">
+      <h4>Course Certificates</h4>
+      <table class="text-dark overflow-x-auto">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Associated Course</th>
+            <th>Created At</th>
+            <th class="text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let cert of getCourseCertificates()">
+            <td>{{ cert.name }}</td>
+            <td>{{ cert.description }}</td>
+            <td>{{ getCourseName(cert.course) }}</td>
+            <td>{{ cert.createdAt | date:'medium' }}</td>
+            <td class="d-flex gap-2">
+              <button class="edit-button btn"
+                      (click)="startEdit(cert)"
+                      [disabled]="isUpdating === cert._id || editingCertificate?._id === cert._id">
+                Edit
+              </button>
+              <button class="delete-button btn"
+                      (click)="deleteCertificate(cert._id)"
+                      [disabled]="isDeleting === cert._id || editingCertificate?._id === cert._id">
+                {{ isDeleting === cert._id ? 'Deleting...' : 'Delete' }}
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pathway Certificates Table -->
+    <div *ngIf="!isLoadingCertificates && getPathwayCertificates().length > 0">
+      <h4>Pathway Certificates</h4>
+      <table class="text-dark overflow-x-auto">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Associated Pathway</th>
+            <th>Created At</th>
+            <th class="text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let cert of getPathwayCertificates()">
+            <td>{{ cert.name }}</td>
+            <td>{{ cert.description }}</td>
+            <td>{{ getPathwayName(cert.pathway) }}</td>
+            <td>{{ cert.createdAt | date:'medium' }}</td>
+            <td class="d-flex gap-2">
+              <button class="edit-button btn"
+                      (click)="startEdit(cert)"
+                      [disabled]="isUpdating === cert._id || editingCertificate?._id === cert._id">
+                Edit
+              </button>
+              <button class="delete-button btn"
+                      (click)="deleteCertificate(cert._id)"
+                      [disabled]="isDeleting === cert._id || editingCertificate?._id === cert._id">
+                {{ isDeleting === cert._id ? 'Deleting...' : 'Delete' }}
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 
   <!-- 3. Grant Certificate Form -->

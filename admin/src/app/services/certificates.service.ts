@@ -6,7 +6,8 @@ export interface Certificate {
   _id: string;
   name: string;
   description: string;
-  course: string;
+  course?: string;
+  pathway?: string;
   createdAt: string;
   __v: number;
 }
@@ -27,7 +28,12 @@ export class CertificatesService {
     return this.http.get<Certificate>(`${this.apiUrl}/${id}`);
   }
 
-  createCertificate(data: { name: string; description: string; course: string }): Observable<Certificate> {
+  createCertificate(data: {
+    name: string;
+    description: string;
+    course?: string;
+    pathway?: string;
+  }): Observable<Certificate> {
     return this.http.post<Certificate>(`${this.apiUrl}/createCertificate`, data);
   }
 
