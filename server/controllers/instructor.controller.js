@@ -58,9 +58,13 @@ const instructorContoller = {
         });
       }
       let secretKey = process.env.SECRET_KEY || "secretKey";
-      let token = await jwt.sign({ id: instructor._id, role: instructor.role }, secretKey, {
-        expiresIn: "2d",
-      });
+      let token = await jwt.sign(
+        { id: instructor._id, role: instructor.role },
+        secretKey,
+        {
+          expiresIn: "2d",
+        }
+      );
       res.cookie("access_token", `Bearer ${token}`, {
         httpOnly: true,
         maxAge: 60 * 60 * 24 * 2 * 1000,
@@ -446,6 +450,53 @@ const instructorContoller = {
       });
 
       return res.status(200).send(users);
+    } catch (error) {
+      console.error("Get Users In Course Error:", error);
+      return res.status(500).send({
+        message: error.message,
+      });
+    }
+  },
+  getUsersInCoursebyInstructorId: async (req, res) => {
+    try {
+      const courses = await CourseModel.find({
+        instructors: req.params.id,
+      });
+
+      if (!courses || courses.length === 0) {
+        return res.status(404).json({ error: "No courses found" });
+      }
+
+      const courseIds = courses.map((course) => course._id);
+
+      // Create a map of course IDs to course names
+      const courseMap = {};
+      courses.forEach((course) => {
+        courseMap[course._id.toString()] = course.name;
+      });
+
+      let users = await User.find({
+        courses: { $in: courseIds },
+      });
+
+      users = users.map((user) => {
+        let userObject = user.toObject();
+        delete userObject.password;
+        delete userObject.tokens;
+
+        // Get the course names for this user
+        const userCourseNames = user.courses
+          .filter((courseId) => courseMap[courseId.toString()])
+          .map((courseId) => courseMap[courseId.toString()])
+          .join(" & ");
+
+        // Add course names to user object
+        userObject.courseNames = userCourseNames;
+
+        return userObject;
+      });
+
+      return res.status(200).send({ studentsCount: users.length });
     } catch (error) {
       console.error("Get Users In Course Error:", error);
       return res.status(500).send({

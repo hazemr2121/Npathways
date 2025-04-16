@@ -149,7 +149,7 @@ export default function CourseDetails() {
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const isTablet = useMediaQuery(theme.breakpoints.between("sm", "md"));
   const [enrolledStudents, setEnrolledStudents] = useState(0);
-  const [instructorCoursesCount, setInstructorCoursesCount] = useState(0);
+  const [instructorStats, setInstructorStats] = useState({});
 
   useEffect(() => {
     const fetchEnrolledStudentsInCourse = async () => {
@@ -221,9 +221,9 @@ export default function CourseDetails() {
 
   useEffect(() => {
     getSingleCourse();
-    // Only fetch instructor courses if instructors exist
+    // Only fetch instructor stats if instructors exist
     if (course.instructors && course.instructors.length > 0) {
-      fetchInstructorCoursesCount();
+      fetchInstructorStats();
     }
   }, [id, user, course._id]);
 
@@ -290,28 +290,45 @@ export default function CourseDetails() {
     course.instructors && course.instructors.length > 0
       ? course.instructors[0]._id
       : null;
-  console.log("First instructor ID:", instructorId);
 
   // Toggle bookmark
   const handleToggleBookmark = () => {
     setIsBookmarked(!isBookmarked);
     // You would typically save this to user preferences via API call
   };
-  const fetchInstructorCoursesCount = async () => {
+  const fetchInstructorStats = async () => {
     setLoading(true);
     try {
-      // Check if instructors exist and array has at least one element
       if (course.instructors && course.instructors.length > 0) {
-        const response = await axios.get(
-          `http://localhost:5024/api/course/getcoursesByInstructorId/${course.instructors[0]._id}`,
-          { withCredentials: true }
-        );
-        console.log("Fetched instructor courses count:", response.data);
-        const coursesCount = response.data.coursesCount;
-        setInstructorCoursesCount(coursesCount);
+        const statsData = {};
+
+        // Process each instructor
+        for (const instructor of course.instructors) {
+          if (instructor._id) {
+            // Get courses count
+            const coursesResponse = await axios.get(
+              `http://localhost:5024/api/course/getcoursesByInstructorId/${instructor._id}`,
+              { withCredentials: true }
+            );
+
+            // Get students count
+            const studentsResponse = await axios.get(
+              `http://localhost:5024/api/instructor/getUsersInCoursebyInstructorId/${instructor._id}`,
+              { withCredentials: true }
+            );
+
+            // Store stats for this instructor
+            statsData[instructor._id] = {
+              coursesCount: coursesResponse.data.courseCount || 0,
+              studentsCount: studentsResponse.data.studentsCount || 0,
+            };
+          }
+        }
+
+        setInstructorStats(statsData);
       }
     } catch (error) {
-      console.error("Error fetching instructor courses count:", error);
+      console.error("Error fetching instructor stats:", error);
     } finally {
       setLoading(false);
     }
@@ -525,14 +542,14 @@ export default function CourseDetails() {
               <Box display="flex" alignItems="center" flexWrap="wrap" gap={2}>
                 {/* Instructor info */}
                 <Box display="flex" alignItems="center">
-                  <Avatar
+                  {/* <Avatar
                     src={
                       (course.instructors && course.instructors[0]?.avatar) ||
                       person
                     }
                     alt={instructorNames.split(",")[0]}
                     sx={{ mr: 1, border: "2px solid white", boxShadow: 1 }}
-                  />
+                  /> */}
                   <Typography variant="body2" color="text.secondary">
                     By{" "}
                     <Typography
@@ -546,7 +563,7 @@ export default function CourseDetails() {
                 </Box>
 
                 {/* Course rating */}
-                <Box display="flex" alignItems="center">
+                {/* <Box display="flex" alignItems="center">
                   <Rating
                     value={course.rating || 4.5}
                     precision={0.5}
@@ -559,12 +576,12 @@ export default function CourseDetails() {
                     {course.reviewCount || Math.floor(Math.random() * 500) + 10}{" "}
                     reviews)
                   </Typography>
-                </Box>
+                </Box> */}
 
                 {/* Enrollment count */}
                 <Chip
                   icon={<PeopleIcon />}
-                  label={`${course.enrollmentCount || 120} enrolled`}
+                  label={`${enrolledStudents || 120} enrolled`}
                   variant="outlined"
                   size="small"
                   sx={{ borderRadius: 1 }}
@@ -741,7 +758,10 @@ export default function CourseDetails() {
                                     }}
                                   >
                                     <InstructorAvatar
-                                      src={instructor.avatar || person}
+                                      onError={() => {
+                                        instructor.image = person;
+                                      }}
+                                      src={instructor.image || person}
                                       alt={`${instructor.firstName || ""} ${
                                         instructor.lastName || ""
                                       }`}
@@ -763,12 +783,12 @@ export default function CourseDetails() {
                                       >
                                         {instructor.title || "BIM Expert"}
                                       </Typography>
-                                      <Rating
+                                      {/* <Rating
                                         value={instructor.rating || 4.8}
                                         readOnly
                                         size="small"
                                         precision={0.1}
-                                      />
+                                      /> */}
                                     </Box>
                                   </Box>
 
@@ -790,15 +810,18 @@ export default function CourseDetails() {
                                   >
                                     <Chip
                                       icon={<SchoolIcon fontSize="small" />}
-                                      label={`${instructorCoursesCount} Courses`}
+                                      label={`${
+                                        instructorStats[instructor._id]
+                                          ?.coursesCount || 0
+                                      } Courses`}
                                       size="small"
                                       variant="outlined"
                                     />
                                     <Chip
                                       icon={<PeopleIcon fontSize="small" />}
                                       label={`${
-                                        instructor.students ||
-                                        Math.floor(Math.random() * 1000) + 100
+                                        instructorStats[instructor._id]
+                                          ?.studentsCount || 0
                                       } Students`}
                                       size="small"
                                       variant="outlined"
