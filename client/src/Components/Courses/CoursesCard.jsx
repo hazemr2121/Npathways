@@ -204,7 +204,7 @@ function CoursesCard({ course }) {
             </Tooltip>
 
             {/* Rating */}
-            <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+            {/* <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
               <Rating
                 value={course.rating || 4 + Math.random()}
                 precision={0.5}
@@ -214,7 +214,7 @@ function CoursesCard({ course }) {
               <Typography variant="body2" color="text.secondary" sx={{ ml: 1 }}>
                 ({Math.floor(Math.random() * 500) + 5})
               </Typography>
-            </Box>
+            </Box> */}
 
             <Divider sx={{ my: 1.5 }} />
 
