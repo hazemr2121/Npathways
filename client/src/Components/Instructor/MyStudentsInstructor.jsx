@@ -92,18 +92,18 @@ export default function MyStudentsInstructor() {
         justifyContent="space-between"
         sx={{ py: 2, px: 0 }}
       >
-        <Grid2 item textAlign="center" size={1}>
+        <Grid2 item textAlign="center" size={2}>
           <Typography sx={{ color: "text.gray" }}>Picture</Typography>
         </Grid2>
-        <Grid2 item textAlign="center" size={4}>
+        <Grid2 item textAlign="center" size={5}>
           <Typography sx={{ color: "text.gray" }}>Name</Typography>
         </Grid2>
-        <Grid2 item textAlign="center" size={4}>
+        <Grid2 item textAlign="center" size={5}>
           <Typography sx={{ color: "text.gray" }}>Course Name</Typography>
         </Grid2>
-        <Grid2 item textAlign="center" size={3}>
+        {/* <Grid2 item textAlign="center" size={3}>
           <Typography sx={{ color: "text.gray" }}>Passed Exams</Typography>
-        </Grid2>
+        </Grid2> */}
       </Grid2>
 
       {isLoading && (
@@ -145,7 +145,7 @@ export default function MyStudentsInstructor() {
             sx={{ py: 1, px: 0 }}
             key={student.id}
           >
-            <Grid2 item textAlign="center" size={1}>
+            <Grid2 item textAlign="center" size={2}>
               <Avatar
                 src={
                   student.image
@@ -158,13 +158,13 @@ export default function MyStudentsInstructor() {
                 {student.firstName[0] + student.lastName[0]}
               </Avatar>
             </Grid2>
-            <Grid2 item textAlign="center" size={4}>
+            <Grid2 item textAlign="center" size={5}>
               <Typography>{`${student.firstName} ${student.lastName}`}</Typography>
             </Grid2>
-            <Grid2 item textAlign="center" size={4}>
+            <Grid2 item textAlign="center" size={5}>
               <Typography>{student.courseNames}</Typography>
             </Grid2>
-            <Grid2 item textAlign="center" size={3}>
+            {/* <Grid2 item textAlign="center" size={3}>
               <Chip
                 label={`${student.passedExams || 0}/${student.totalExams || 0}`}
                 size="small"
@@ -172,7 +172,7 @@ export default function MyStudentsInstructor() {
                 variant="outlined"
                 sx={{ fontWeight: "medium" }}
               />
-            </Grid2>
+            </Grid2> */}
           </Grid2>
         ))}
 
