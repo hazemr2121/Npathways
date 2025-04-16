@@ -1,33 +1,18 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Enrollment } from '../enrollment.interface';
+import { PathwayService } from '../../../services/pathway.service';
 
-interface Enrollment {
-  _id: string;
-  userId: {
+interface PathwayResponse {
+  message: string;
+  data: {
     _id: string;
-    pathways: Array<{
-      _id: string;
-      name: string;
-    }>;
-  };
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  nationality: string;
-  facultyName: string;
-  GPA: number;
-  motivationLetter: string;
-  exam: Array<{
-    question: string;
-    answer: string;
-  }>;
-  createdAt: string;
-  updatedAt: string;
-  address: {
-    country: string;
-    city: string;
-    street: string;
+    name: string;
+    courses: any[];
+    date: string;
+    __v: number;
+    description: string;
+    updatedAt: string;
   };
 }
 
@@ -96,6 +81,20 @@ interface Enrollment {
               <div class="info-item">
                 <label>GPA</label>
                 <p>{{enrollment.GPA}}</p>
+              </div>
+              <div class="info-item">
+                <label>Requested Pathway</label>
+                <div class="pathway-approval">
+                  <p>{{pathwayName || 'No Requested Pathway'}}</p>
+                  <button
+                    *ngIf="enrollment.pathway && !isApproved"
+                    class="approve-btn"
+                    (click)="approvePathway()"
+                    [disabled]="isApproving">
+                    {{isApproving ? 'Approving...' : 'Approve Pathway'}}
+                  </button>
+                  <span *ngIf="isApproved" class="approved-badge">Approved</span>
+                </div>
               </div>
             </div>
           </div>
@@ -267,9 +266,101 @@ interface Enrollment {
       color: #707EAE;
       margin: 0;
     }
+
+    .pathway-approval {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .approve-btn {
+      background-color: #4318FF;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: background-color 0.2s;
+    }
+
+    .approve-btn:hover {
+      background-color: #3311DB;
+    }
+
+    .approve-btn:disabled {
+      background-color: #A3AED0;
+      cursor: not-allowed;
+    }
+
+    .approved-badge {
+      background-color: #05CD99;
+      color: white;
+      padding: 0.25rem 0.75rem;
+      border-radius: 4px;
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
   `]
 })
-export class EnrollmentDetailsComponent {
+export class EnrollmentDetailsComponent implements OnInit {
   @Input() enrollment: Enrollment | null = null;
   @Output() close = new EventEmitter<void>();
+  pathwayName: string = '';
+  isApproving: boolean = false;
+  isApproved: boolean = false;
+
+  constructor(private pathwayService: PathwayService) {}
+
+  ngOnInit() {
+    if (this.enrollment?.pathway) {
+      this.loadPathwayName();
+      this.checkApprovalStatus();
+    }
+  }
+
+  private loadPathwayName() {
+    if (this.enrollment?.pathway) {
+      this.pathwayService.getPathwayById(this.enrollment.pathway).subscribe({
+        next: (response: PathwayResponse) => {
+          this.pathwayName = response.data.name;
+        },
+        error: (error: any) => {
+          console.error('Error loading pathway:', error);
+          this.pathwayName = 'Error loading pathway';
+        }
+      });
+    }
+  }
+
+  private checkApprovalStatus() {
+    if (this.enrollment?.userId.pathways) {
+      this.isApproved = this.enrollment.userId.pathways.some(p => p._id === this.enrollment?.pathway);
+    }
+  }
+
+  approvePathway() {
+    if (!this.enrollment?.userId._id || !this.enrollment?.pathway) {
+      return;
+    }
+
+    this.isApproving = true;
+    this.pathwayService.enrollUserByAdmin( this.enrollment.pathway, this.enrollment.userId._id).subscribe({
+      next: (response) => {
+        this.isApproved = true;
+        this.isApproving = false;
+        // Refresh the enrollment data to show updated pathways
+        if (this.enrollment) {
+          this.enrollment.userId.pathways.push({
+            _id: this.enrollment.pathway,
+            name: this.pathwayName
+          });
+        }
+      },
+      error: (error) => {
+        console.error('Error approving pathway:', error);
+        this.isApproving = false;
+      }
+    });
+  }
 }

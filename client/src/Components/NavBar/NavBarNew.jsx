@@ -513,6 +513,7 @@ const NavBarNew = () => {
                   textTransform: "none",
                   borderRadius: "100px",
                   py: 1.2,
+                  m: 4,
                   fontFamily: "Poppins-Medium, Helvetica",
                   fontWeight: 500,
                   fontSize: "0.875rem",

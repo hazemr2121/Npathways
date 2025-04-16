@@ -107,6 +107,10 @@ router.get(
   authenticationInstructor,
   instructorContoller.getUsersInCourse
 );
+router.get(
+  "/getUsersInCoursebyInstructorId/:id",
+  instructorContoller.getUsersInCoursebyInstructorId
+);
 //? /////////////////////////
 
 export default router;
