@@ -1,33 +1,18 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Enrollment } from '../enrollment.interface';
+import { PathwayService } from '../../../services/pathway.service';
 
-interface Enrollment {
-  _id: string;
-  userId: {
+interface PathwayResponse {
+  message: string;
+  data: {
     _id: string;
-    pathways: Array<{
-      _id: string;
-      name: string;
-    }>;
-  };
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  nationality: string;
-  facultyName: string;
-  GPA: number;
-  motivationLetter: string;
-  exam: Array<{
-    question: string;
-    answer: string;
-  }>;
-  createdAt: string;
-  updatedAt: string;
-  address: {
-    country: string;
-    city: string;
-    street: string;
+    name: string;
+    courses: any[];
+    date: string;
+    __v: number;
+    description: string;
+    updatedAt: string;
   };
 }
 
@@ -96,6 +81,10 @@ interface Enrollment {
               <div class="info-item">
                 <label>GPA</label>
                 <p>{{enrollment.GPA}}</p>
+              </div>
+              <div class="info-item">
+                <label>Requested Pathway</label>
+                <p>{{pathwayName || 'No Requested Pathway'}}</p>
               </div>
             </div>
           </div>
@@ -269,7 +258,30 @@ interface Enrollment {
     }
   `]
 })
-export class EnrollmentDetailsComponent {
+export class EnrollmentDetailsComponent implements OnInit {
   @Input() enrollment: Enrollment | null = null;
   @Output() close = new EventEmitter<void>();
+  pathwayName: string = '';
+
+  constructor(private pathwayService: PathwayService) {}
+
+  ngOnInit() {
+    if (this.enrollment?.pathway) {
+      this.loadPathwayName();
+    }
+  }
+
+  private loadPathwayName() {
+    if (this.enrollment?.pathway) {
+      this.pathwayService.getPathwayById(this.enrollment.pathway).subscribe({
+        next: (response: PathwayResponse) => {
+          this.pathwayName = response.data.name;
+        },
+        error: (error: any) => {
+          console.error('Error loading pathway:', error);
+          this.pathwayName = 'Error loading pathway';
+        }
+      });
+    }
+  }
 }
