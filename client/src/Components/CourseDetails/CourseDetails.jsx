@@ -542,14 +542,14 @@ export default function CourseDetails() {
               <Box display="flex" alignItems="center" flexWrap="wrap" gap={2}>
                 {/* Instructor info */}
                 <Box display="flex" alignItems="center">
-                  <Avatar
+                  {/* <Avatar
                     src={
                       (course.instructors && course.instructors[0]?.avatar) ||
                       person
                     }
                     alt={instructorNames.split(",")[0]}
                     sx={{ mr: 1, border: "2px solid white", boxShadow: 1 }}
-                  />
+                  /> */}
                   <Typography variant="body2" color="text.secondary">
                     By{" "}
                     <Typography
@@ -758,7 +758,10 @@ export default function CourseDetails() {
                                     }}
                                   >
                                     <InstructorAvatar
-                                      src={instructor.avatar || person}
+                                      onError={() => {
+                                        instructor.image = person;
+                                      }}
+                                      src={instructor.image || person}
                                       alt={`${instructor.firstName || ""} ${
                                         instructor.lastName || ""
                                       }`}
