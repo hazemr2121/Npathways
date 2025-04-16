@@ -454,8 +454,8 @@ export default function ProfileSection() {
     nationality: yup.string(),
     dateOfBirth: yup.date()
       .required("Date of birth is required")
-      .min(new Date(1980, 0, 1), "DOB must be after 1980")
-      .max(new Date(), "DOB can't be in the future"),
+      .min(new Date(1980, 0, 1), "Birth Of Data must be after 1980")
+      .max(new Date(), "Birth of Data can't be in the future"),
     facultyName: yup.string()
   });
 
@@ -526,21 +526,67 @@ export default function ProfileSection() {
     }
   };
 
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       const [userRes, enrollmentRes] = await Promise.all([
+  //         axios.get(`http://localhost:5024/api/user/${userId}`, { withCredentials: true }),
+  //         axios.get(`http://localhost:5024/api/enrollment/user/${userId}`, { withCredentials: true })
+  //       ]);
+  //       const enrollment = enrollmentRes.data[0];
+  //       setUserData(userRes.data);
+  //       setEnrollmentData(enrollment);
+        
+  //       formik.setValues({
+  //         firstName: userRes.data.firstName,
+  //         lastName: userRes.data.lastName,
+  //         gpa: enrollment.GPA || "",
+  //         country: enrollment.address?.country || "",
+  //         city: enrollment.address?.city || "",
+  //         street: enrollment.address?.street || "",
+  //         phone: enrollment.phone || "",
+  //         nationality: enrollment.nationality || "",
+  //         dateOfBirth: enrollment.dateOfBirth ? new Date(enrollment.dateOfBirth) : null,
+  //         facultyName: enrollment.facultyName || "",
+  //       });
+  //     } catch (err) {
+  //       console.error(err);
+  //       setError("Failed to fetch user data");
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+  //   if (isAuthenticated && userId) fetchData();
+  // }, [userId, isAuthenticated]);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [userRes, enrollmentRes] = await Promise.all([
-          axios.get(`http://localhost:5024/api/user/${userId}`, { withCredentials: true }),
-          axios.get(`http://localhost:5024/api/enrollment/user/${userId}`, { withCredentials: true })
-        ]);
-        const enrollment = enrollmentRes.data[0];
+         const userRes = await axios.get(`http://localhost:5024/api/user/${userId}`, {
+          withCredentials: true
+        });
         setUserData(userRes.data);
-        setEnrollmentData(enrollment);
-        
-        formik.setValues({
+  
+         formik.setValues((prev) => ({
+          ...prev,
           firstName: userRes.data.firstName,
           lastName: userRes.data.lastName,
-          gpa: enrollment.GPA,
+        }));
+      } catch (err) {
+        console.error("User fetch error:", err);
+        setError("Failed to fetch user data");
+      }
+  
+      try {
+         const enrollmentRes = await axios.get(`http://localhost:5024/api/enrollment/user/${userId}`, {
+          withCredentials: true
+        });
+        const enrollment = enrollmentRes.data[0];
+        setEnrollmentData(enrollment);
+  
+        formik.setValues((prev) => ({
+          ...prev,
+          gpa: enrollment.GPA || "",
           country: enrollment.address?.country || "",
           city: enrollment.address?.city || "",
           street: enrollment.address?.street || "",
@@ -548,17 +594,17 @@ export default function ProfileSection() {
           nationality: enrollment.nationality || "",
           dateOfBirth: enrollment.dateOfBirth ? new Date(enrollment.dateOfBirth) : null,
           facultyName: enrollment.facultyName || "",
-        });
+        }));
       } catch (err) {
-        console.error(err);
-        setError("Failed to fetch user data");
-      } finally {
+        console.warn("Enrollment fetch failed (but user loaded):", err);
+       } finally {
         setLoading(false);
       }
     };
+  
     if (isAuthenticated && userId) fetchData();
   }, [userId, isAuthenticated]);
-
+  
   const handleCancel = () => {
     if (userData && enrollmentData) {
       formik.setValues({
