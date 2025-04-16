@@ -177,12 +177,35 @@
   <div class="form-section grant-section">
     <h3>Grant Certificate to Student</h3>
 
-    <div>
-      <label for="certificateSelectGrant">Select Certificate:</label>
-      <select id="certificateSelectGrant" [(ngModel)]="selectedCertificateIdForGranting" (change)="onCertificateSelectForGranting($any($event.target).value)" required>
-        <option [ngValue]="null" disabled>Select a Certificate</option>
-        <option *ngFor="let cert of certificates" [value]="cert._id">
+    <div class="assignment-type-buttons">
+      <button (click)="grantAssignmentType = 'course'"
+              [class.active]="grantAssignmentType === 'course'"
+              [disabled]="isGranting">
+        Course Certificates
+      </button>
+      <button (click)="grantAssignmentType = 'pathway'"
+              [class.active]="grantAssignmentType === 'pathway'"
+              [disabled]="isGranting">
+        Pathway Certificates
+      </button>
+    </div>
+
+    <div *ngIf="grantAssignmentType === 'course'">
+      <label for="courseCertificateSelectGrant">Select Course Certificate:</label>
+      <select id="courseCertificateSelectGrant" [(ngModel)]="selectedCertificateIdForGranting" (change)="onCertificateSelectForGranting($any($event.target).value)" required>
+        <option [ngValue]="null" disabled>Select a Course Certificate</option>
+        <option *ngFor="let cert of getCourseCertificates()" [value]="cert._id">
           {{ cert.name }} ({{ getCourseName(cert.course) }})
+        </option>
+      </select>
+    </div>
+
+    <div *ngIf="grantAssignmentType === 'pathway'">
+      <label for="pathwayCertificateSelectGrant">Select Pathway Certificate:</label>
+      <select id="pathwayCertificateSelectGrant" [(ngModel)]="selectedCertificateIdForGranting" (change)="onCertificateSelectForGranting($any($event.target).value)" required>
+        <option [ngValue]="null" disabled>Select a Pathway Certificate</option>
+        <option *ngFor="let cert of getPathwayCertificates()" [value]="cert._id">
+          {{ cert.name }} ({{ getPathwayName(cert.pathway) }})
         </option>
       </select>
     </div>
@@ -199,7 +222,7 @@
         </select>
       </div>
       <div *ngIf="!isLoadingUsers && users.length === 0" class="info-message">
-        No students found for this course.
+        No students found for this {{ grantAssignmentType }}.
       </div>
     </div>
 

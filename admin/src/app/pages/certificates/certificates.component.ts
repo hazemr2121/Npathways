@@ -60,6 +60,7 @@ export class CertificateComponent implements OnInit {
   certificateName: string = '';
   certificateDescription: string = '';
   assignmentType: 'course' | 'pathway' = 'course';
+  grantAssignmentType: 'course' | 'pathway' = 'course';
 
   // Validation states
   isDescriptionValid: boolean = true;
