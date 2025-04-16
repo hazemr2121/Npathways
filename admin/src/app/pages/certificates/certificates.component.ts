@@ -167,13 +167,17 @@ export class CertificateComponent implements OnInit {
 
     // Find the selected certificate
     const selectedCertificate = this.certificates.find(cert => cert._id === certificateId);
-    if (selectedCertificate && selectedCertificate.course) {
-      this.isLoadingUsers = true;
+    if (!selectedCertificate) return;
+
+    this.isLoadingUsers = true;
+
+    if (selectedCertificate.course) {
+      // Handle course students
       console.log('Loading users for Course ID:', selectedCertificate.course);
       this.courseService.getUsersInCourse(selectedCertificate.course).subscribe({
         next: (data) => {
           this.users = data.users || data || [];
-          console.log('Users loaded:', this.users);
+          console.log('Course users loaded:', this.users);
           this.isLoadingUsers = false;
           if (this.users.length === 0) {
             console.warn('No users found for this course.');
@@ -182,7 +186,31 @@ export class CertificateComponent implements OnInit {
         error: (err) => {
           console.error('Error loading users for course:', err);
           this.isLoadingUsers = false;
-          // Add user feedback
+          this.snackBar.open('Error loading course students', 'Close', {
+            duration: 3000,
+            panelClass: ['error-snackbar']
+          });
+        }
+      });
+    } else if (selectedCertificate.pathway) {
+      // Handle pathway students
+      console.log('Loading users for Pathway ID:', selectedCertificate.pathway);
+      this.pathwayService.getStudentsInPathway(selectedCertificate.pathway).subscribe({
+        next: (response) => {
+          this.users = response.data || [];
+          console.log('Pathway users loaded:', this.users);
+          this.isLoadingUsers = false;
+          if (this.users.length === 0) {
+            console.warn('No users found for this pathway.');
+          }
+        },
+        error: (err) => {
+          console.error('Error loading users for pathway:', err);
+          this.isLoadingUsers = false;
+          this.snackBar.open('Error loading pathway students', 'Close', {
+            duration: 3000,
+            panelClass: ['error-snackbar']
+          });
         }
       });
     }

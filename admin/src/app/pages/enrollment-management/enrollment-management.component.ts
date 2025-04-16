@@ -5,36 +5,7 @@ import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 import { EnrollmentService } from '../../services/enrollment.service';
 import { EnrollmentDetailsComponent } from './enrollment-details/enrollment-details.component';
-
-interface Enrollment {
-  _id: string;
-  userId: {
-    _id: string;
-    pathways: Array<{
-      _id: string;
-      name: string;
-    }>;
-  };
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  nationality: string;
-  facultyName: string;
-  GPA: number;
-  motivationLetter: string;
-  exam: Array<{
-    question: string;
-    answer: string;
-  }>;
-  createdAt: string;
-  updatedAt: string;
-  address: {
-    country: string;
-    city: string;
-    street: string;
-  };
-}
+import { Enrollment } from './enrollment.interface';
 
 @Component({
   selector: 'app-enrollment-management',
