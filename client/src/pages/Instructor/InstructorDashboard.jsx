@@ -1,5 +1,12 @@
 import React, { useState } from "react";
-import { Box, Container, Divider, Stack, Typography } from "@mui/material";
+import {
+  Box,
+  Button,
+  Container,
+  Divider,
+  Stack,
+  Typography,
+} from "@mui/material";
 import ProfileSection from "../../Components/Student/MyPathway/ProfileSection";
 import MyStudentsInstructor from "../../Components/Instructor/MyStudentsInstructor";
 import InstructorCourseSection from "../../Components/Instructor/InstructorCourseSection";
@@ -11,9 +18,24 @@ export default function InstructorDashboard() {
   return (
     <>
       <Container sx={{ my: 4 }}>
-        <Typography variant="h4" px={4} fontWeight={"bold"}>
-          My Dashboard
-        </Typography>
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          px={4}
+        >
+          <Typography variant="h4" fontWeight={"bold"}>
+            My Dashboard
+          </Typography>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => window.open("http://localhost:4200", "_blank")}
+          >
+            Instructor editing page
+          </Button>
+        </Box>
+
         <Stack
           flexDirection={"row"}
           px={4}
