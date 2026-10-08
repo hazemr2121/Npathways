@@ -1,4 +1,5 @@
 import { io } from "socket.io-client";
+import { API_URL } from "../config.js";
 
 let userId = localStorage.getItem("userId");
 let userName;
@@ -17,7 +18,7 @@ if (!userId) {
   }
 }
 
-socket = io("http://localhost:5024", {
+socket = io(API_URL, {
   query: { userId, userName },
 });
 

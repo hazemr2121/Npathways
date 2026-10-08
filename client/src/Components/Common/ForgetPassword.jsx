@@ -27,6 +27,7 @@ import LockIcon from "@mui/icons-material/Lock";
 import KeyIcon from "@mui/icons-material/Key";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { API_URL } from "../../config.js";
 
 const validationSchema = Yup.object().shape({
   password: Yup.string()
@@ -91,13 +92,13 @@ function ForgetPassword() {
       // Select API endpoint based on role
       switch (role.toLowerCase()) {
         case "user":
-          resetEndpoint = `http://localhost:5024/api/user/resetPassword/${token}`;
+          resetEndpoint = `${API_URL}/api/user/resetPassword/${token}`;
           break;
         case "instructor":
-          resetEndpoint = `http://localhost:5024/api/instructor/resetPassword/${token}`;
+          resetEndpoint = `${API_URL}/api/instructor/resetPassword/${token}`;
           break;
         case "admin":
-          resetEndpoint = `http://localhost:5024/api/admin/resetPassword/${token}`;
+          resetEndpoint = `${API_URL}/api/admin/resetPassword/${token}`;
           break;
         default:
           throw new Error("Invalid role specified");

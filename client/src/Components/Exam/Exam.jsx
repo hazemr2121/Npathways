@@ -40,6 +40,7 @@ import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import FlagOutlinedIcon from "@mui/icons-material/FlagOutlined";
 import BookmarkBorderOutlinedIcon from "@mui/icons-material/BookmarkBorderOutlined";
 import BookmarkIcon from "@mui/icons-material/Bookmark";
+import { API_URL } from "../../config.js";
 
 // Custom styled components
 const ExamContainer = styled(Paper)(({ theme }) => ({
@@ -130,7 +131,7 @@ export default function Exam() {
     try {
       setLoading(true);
       const { data } = await axios.get(
-        `http://localhost:5024/api/exam/getStudent/${id}`
+        `${API_URL}/api/exam/getStudent/${id}`
       );
 
       setExam(data);
@@ -153,7 +154,7 @@ export default function Exam() {
     };
 
     axios
-      .post("http://localhost:5024/api/exam/submitExam", payload, {
+      .post(`${API_URL}/api/exam/submitExam`, payload, {
         withCredentials: true,
       })
       .then((response) => {

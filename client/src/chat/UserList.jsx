@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Box, Typography, Button, CircularProgress } from "@mui/material";
 import axios from "axios";
+import { API_URL } from "../config.js";
 
 const UserList = () => {
   const [users, setUsers] = useState([]);
@@ -10,7 +11,7 @@ const UserList = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await axios.get("http://localhost:5024/api/user/all", {
+        const response = await axios.get(`${API_URL}/api/user/all`, {
           withCredentials: true,
         });
         setUsers(response.data);
@@ -28,7 +29,7 @@ const UserList = () => {
   const handleChatAccess = (userId) => {
     axios
       .post(
-        `http://localhost:5024/api/chat/${userId}`,
+        `${API_URL}/api/chat/${userId}`,
         {},
         {
           withCredentials: true,

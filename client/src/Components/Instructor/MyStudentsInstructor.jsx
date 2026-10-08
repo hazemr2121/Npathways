@@ -13,6 +13,7 @@ import {
 import { Search } from "@mui/icons-material";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
+import { API_URL } from "../../config.js";
 
 export default function MyStudentsInstructor() {
   const [isLoading, setIsLoading] = useState(false);
@@ -26,7 +27,7 @@ export default function MyStudentsInstructor() {
       setIsLoading(true);
       try {
         const response = await axios.get(
-          "http://localhost:5024/api/instructor/getUsersInCourse",
+          `${API_URL}/api/instructor/getUsersInCourse`,
           {
             withCredentials: true,
           }

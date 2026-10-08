@@ -39,6 +39,7 @@ import {
 import { AuthContext } from "../contexts/AuthContext";
 import { motion } from "framer-motion";
 import { styled } from "@mui/material/styles";
+import { API_URL } from "../config.js";
 
 // Styled components
 const PathwayHeader = styled(Paper)(({ theme }) => ({
@@ -164,7 +165,7 @@ function Pathway() {
       try {
         setLoadingExams(true);
         const response = await axios.get(
-          "http://localhost:5024/api/exam/submittedExams",
+          `${API_URL}/api/exam/submittedExams`,
           {
             withCredentials: true, // Ensures cookies are sent with the request
           }
@@ -189,7 +190,7 @@ function Pathway() {
     setError(null);
 
     axios
-      .get(`http://localhost:5024/api/pathway/student/${id}`, {
+      .get(`${API_URL}/api/pathway/student/${id}`, {
         withCredentials: true,
       })
       .then((response) => {

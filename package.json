@@ -1,0 +1,17 @@
+{
+  "name": "npathways-demo",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Root helper scripts and the Vercel demo entry. The apps live in client/, admin/ and server/.",
+  "scripts": {
+    "demo": "node demo.mjs",
+    "demo:api": "npm run demo:api --prefix server",
+    "demo:client": "npm run dev --prefix client"
+  },
+  "dependencies": {
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "express": "^4.21.2"
+  }
+}

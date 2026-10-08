@@ -14,6 +14,7 @@ import bimManagerImage from "../../../assets/bim-manager.jpeg";
 import axios from "axios";
 import { useNavigate } from "react-router";
 import { AuthContext } from "../../../contexts/AuthContext";
+import { API_URL } from "../../../config.js";
 
 export default function PathwaySection() {
   const [pathways, setPathways] = useState([]);
@@ -27,7 +28,7 @@ export default function PathwaySection() {
     const fetchPathways = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:5024/api/pathway/student/userPathway`,
+          `${API_URL}/api/pathway/student/userPathway`,
           { withCredentials: true }
         );
         if (response.data.message === "User is not enrolled in any pathways") {

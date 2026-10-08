@@ -1,0 +1,341 @@
+{
+  "_comment": "Demo dataset for the JSON mock API. Ids are 24-char hex because several handlers and client checks validate them against /^[0-9a-fA-F]{24}$/. Passwords are plain text here on purpose: the mock compares them directly, there is no bcrypt and no database.",
+
+  "users": [
+    {
+      "_id": "6650a1000000000000000001",
+      "firstName": "Demo",
+      "lastName": "Student",
+      "email": "demo@npathways.test",
+      "password": "Demo@1234",
+      "phone": "+201000000001",
+      "image": "",
+      "level": 2,
+      "status": "active",
+      "verify": true,
+      "pathways": ["6650a3000000000000000001"],
+      "courses": ["6650a2000000000000000001", "6650a2000000000000000002"],
+      "certificates": []
+    },
+    {
+      "_id": "6650a1000000000000000002",
+      "firstName": "New",
+      "lastName": "Applicant",
+      "email": "applicant@npathways.test",
+      "password": "Apply@1234",
+      "phone": "+201000000002",
+      "image": "",
+      "level": 1,
+      "status": "active",
+      "verify": true,
+      "pathways": [],
+      "courses": [],
+      "certificates": []
+    }
+  ],
+
+  "instructors": [
+    {
+      "_id": "6650a0000000000000000001",
+      "firstName": "Mona",
+      "lastName": "Farouk",
+      "email": "mona.farouk@npathways.test",
+      "image": "",
+      "bio": "Front-end engineer, ten years building interfaces for the web."
+    },
+    {
+      "_id": "6650a0000000000000000002",
+      "firstName": "Karim",
+      "lastName": "Adel",
+      "email": "karim.adel@npathways.test",
+      "image": "",
+      "bio": "Backend and infrastructure. Believes most problems are data-modelling problems."
+    }
+  ],
+
+  "exams": [
+    {
+      "_id": "6650a4000000000000000001",
+      "name": "HTML & CSS Fundamentals",
+      "timeLimit": 15,
+      "questions": [
+        {
+          "question": "Which tag marks the most important heading on a page?",
+          "difficulty": "easy",
+          "answers": [
+            { "answer": "<h1>", "isCorrect": true },
+            { "answer": "<head>", "isCorrect": false },
+            { "answer": "<title>", "isCorrect": false },
+            { "answer": "<header>", "isCorrect": false }
+          ]
+        },
+        {
+          "question": "Which CSS property controls the space inside an element's border?",
+          "difficulty": "easy",
+          "answers": [
+            { "answer": "padding", "isCorrect": true },
+            { "answer": "margin", "isCorrect": false },
+            { "answer": "gap", "isCorrect": false },
+            { "answer": "border-spacing", "isCorrect": false }
+          ]
+        },
+        {
+          "question": "Which of these are valid CSS position values?",
+          "difficulty": "medium",
+          "answers": [
+            { "answer": "relative", "isCorrect": true },
+            { "answer": "sticky", "isCorrect": true },
+            { "answer": "floating", "isCorrect": false },
+            { "answer": "centered", "isCorrect": false }
+          ]
+        }
+      ]
+    },
+    {
+      "_id": "6650a4000000000000000002",
+      "name": "JavaScript Basics",
+      "timeLimit": 20,
+      "questions": [
+        {
+          "question": "What does === compare that == does not?",
+          "difficulty": "medium",
+          "answers": [
+            { "answer": "The type as well as the value", "isCorrect": true },
+            { "answer": "Only the value", "isCorrect": false },
+            { "answer": "Object identity only", "isCorrect": false },
+            { "answer": "Nothing, they are identical", "isCorrect": false }
+          ]
+        },
+        {
+          "question": "Which method creates a new array from the results of a callback?",
+          "difficulty": "easy",
+          "answers": [
+            { "answer": "map", "isCorrect": true },
+            { "answer": "forEach", "isCorrect": false },
+            { "answer": "push", "isCorrect": false },
+            { "answer": "slice", "isCorrect": false }
+          ]
+        }
+      ]
+    },
+    {
+      "_id": "6650a4000000000000000003",
+      "name": "React Components",
+      "timeLimit": 20,
+      "questions": [
+        {
+          "question": "What does useEffect's dependency array control?",
+          "difficulty": "medium",
+          "answers": [
+            { "answer": "When the effect re-runs", "isCorrect": true },
+            { "answer": "The order effects run in", "isCorrect": false },
+            { "answer": "Whether the component re-renders", "isCorrect": false },
+            { "answer": "How props are passed down", "isCorrect": false }
+          ]
+        },
+        {
+          "question": "Why does a list of elements need a stable key?",
+          "difficulty": "hard",
+          "answers": [
+            {
+              "answer": "So React can match elements to items across re-renders",
+              "isCorrect": true
+            },
+            { "answer": "To sort the list automatically", "isCorrect": false },
+            { "answer": "To make the list accessible", "isCorrect": false },
+            { "answer": "Keys are optional and have no effect", "isCorrect": false }
+          ]
+        }
+      ]
+    }
+  ],
+
+  "courses": [
+    {
+      "_id": "6650a2000000000000000001",
+      "name": "Web Foundations",
+      "description": "How the web actually works: documents, styling, the box model, and laying pages out so they hold together on any screen.",
+      "price": 0,
+      "discount": 0,
+      "status": "published",
+      "image": "",
+      "instructors": ["6650a0000000000000000001"],
+      "requiredExams": ["6650a4000000000000000001"],
+      "lessons": [
+        {
+          "name": "Documents and structure",
+          "description": "Elements, nesting, and why semantic markup pays for itself later.",
+          "duration": 42
+        },
+        {
+          "name": "The box model",
+          "description": "Padding, border, margin, and where your pixels are actually going.",
+          "duration": 38
+        },
+        {
+          "name": "Layout without tears",
+          "description": "Flexbox and grid, and knowing which one the situation calls for.",
+          "duration": 55
+        }
+      ]
+    },
+    {
+      "_id": "6650a2000000000000000002",
+      "name": "JavaScript in Practice",
+      "description": "The language itself, then the parts you actually reach for daily: arrays, async, and the DOM.",
+      "price": 49,
+      "discount": 10,
+      "status": "published",
+      "image": "",
+      "instructors": ["6650a0000000000000000002"],
+      "requiredExams": ["6650a4000000000000000002"],
+      "lessons": [
+        {
+          "name": "Values, types and equality",
+          "description": "Where the famous surprises come from, and how to stop being surprised.",
+          "duration": 46
+        },
+        {
+          "name": "Working with arrays",
+          "description": "map, filter and reduce as a way of thinking rather than three methods.",
+          "duration": 51
+        },
+        {
+          "name": "Asynchronous code",
+          "description": "Promises and async/await, and what the event loop is doing meanwhile.",
+          "duration": 63
+        }
+      ]
+    },
+    {
+      "_id": "6650a2000000000000000003",
+      "name": "Building with React",
+      "description": "Components, state and effects — composing an interface out of small pieces that stay understandable.",
+      "price": 79,
+      "discount": 0,
+      "status": "published",
+      "image": "",
+      "instructors": ["6650a0000000000000000001", "6650a0000000000000000002"],
+      "requiredExams": ["6650a4000000000000000003"],
+      "lessons": [
+        {
+          "name": "Thinking in components",
+          "description": "Splitting an interface along the seams of its data.",
+          "duration": 44
+        },
+        {
+          "name": "State and effects",
+          "description": "What belongs in state, what doesn't, and when an effect is the wrong tool.",
+          "duration": 58
+        },
+        {
+          "name": "Fetching and forms",
+          "description": "Talking to an API and handling the four states every request has.",
+          "duration": 49
+        }
+      ]
+    },
+    {
+      "_id": "6650a2000000000000000004",
+      "name": "APIs and Data",
+      "description": "Designing an HTTP API worth consuming, and modelling the data behind it.",
+      "price": 89,
+      "discount": 15,
+      "status": "published",
+      "image": "",
+      "instructors": ["6650a0000000000000000002"],
+      "requiredExams": [],
+      "lessons": [
+        {
+          "name": "Resources and verbs",
+          "description": "Designing URLs that a stranger can guess correctly.",
+          "duration": 40
+        },
+        {
+          "name": "Modelling relationships",
+          "description": "Embedding versus referencing, and the cost of each at read time.",
+          "duration": 47
+        }
+      ]
+    }
+  ],
+
+  "pathways": [
+    {
+      "_id": "6650a3000000000000000001",
+      "name": "Front-End Developer",
+      "description": "From markup to a working React application, in the order the pieces actually build on each other.",
+      "courses": [
+        "6650a2000000000000000001",
+        "6650a2000000000000000002",
+        "6650a2000000000000000003"
+      ]
+    },
+    {
+      "_id": "6650a3000000000000000002",
+      "name": "Full-Stack Developer",
+      "description": "Everything in the front-end track, plus the API and data layer underneath it.",
+      "courses": [
+        "6650a2000000000000000001",
+        "6650a2000000000000000002",
+        "6650a2000000000000000003",
+        "6650a2000000000000000004"
+      ]
+    }
+  ],
+
+  "enrollments": [
+    {
+      "_id": "6650a5000000000000000001",
+      "userId": "6650a1000000000000000001",
+      "firstName": "Demo",
+      "lastName": "Student",
+      "dateOfBirth": "1999-04-12T00:00:00.000Z",
+      "email": "demo@npathways.test",
+      "phone": "+201000000001",
+      "address": { "country": "Egypt", "city": "Cairo", "street": "12 Nile St" },
+      "nationality": "Egyptian",
+      "facultyName": "Faculty of Engineering",
+      "GPA": 3.4,
+      "pathway": "6650a3000000000000000001",
+      "motivationLetter": "I have been building small sites for a year and want to close the gaps I keep running into.",
+      "exam": [],
+      "createdAt": "2026-06-01T09:00:00.000Z"
+    }
+  ],
+
+  "submittedExams": [
+    {
+      "_id": "6650a6000000000000000001",
+      "examId": "6650a4000000000000000001",
+      "userId": "6650a1000000000000000001",
+      "score": 100,
+      "passed": true,
+      "submittedAt": "2026-06-04T11:20:00.000Z",
+      "responses": [
+        {
+          "question": "Which tag marks the most important heading on a page?",
+          "selectedAnswers": ["<h1>"],
+          "isCorrect": true
+        },
+        {
+          "question": "Which CSS property controls the space inside an element's border?",
+          "selectedAnswers": ["padding"],
+          "isCorrect": true
+        },
+        {
+          "question": "Which of these are valid CSS position values?",
+          "selectedAnswers": ["relative", "sticky"],
+          "isCorrect": true
+        }
+      ]
+    }
+  ],
+
+  "studentCounts": {
+    "6650a2000000000000000001": 128,
+    "6650a2000000000000000002": 94,
+    "6650a2000000000000000003": 61,
+    "6650a2000000000000000004": 37
+  }
+}

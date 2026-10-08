@@ -51,6 +51,7 @@ import DescriptionIcon from "@mui/icons-material/Description";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 import VerifiedIcon from "@mui/icons-material/Verified";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { API_URL } from "../../config.js";
 
 // Styled components
 const CourseImage = styled(CardMedia)(({ theme }) => ({
@@ -159,7 +160,7 @@ export default function CourseDetails() {
       setLoading(true);
       try {
         const response = await axios.get(
-          `http://localhost:5024/api/course/getStudentsCountInCourse/${course._id}`,
+          `${API_URL}/api/course/getStudentsCountInCourse/${course._id}`,
           { withCredentials: true }
         );
         const enrolledStudents = response.data.StudentCount;
@@ -192,7 +193,7 @@ export default function CourseDetails() {
 
     try {
       const response = await axios.get(
-        `http://localhost:5024/api/course/${id}`
+        `${API_URL}/api/course/${id}`
       );
 
       // Handle course image
@@ -241,7 +242,7 @@ export default function CourseDetails() {
       );
 
       const response = await axios.post(
-        "http://localhost:5024/api/payment/create-session",
+        `${API_URL}/api/payment/create-session`,
         { courseId: course._id },
         {
           headers: {
@@ -307,13 +308,13 @@ export default function CourseDetails() {
           if (instructor._id) {
             // Get courses count
             const coursesResponse = await axios.get(
-              `http://localhost:5024/api/course/getcoursesByInstructorId/${instructor._id}`,
+              `${API_URL}/api/course/getcoursesByInstructorId/${instructor._id}`,
               { withCredentials: true }
             );
 
             // Get students count
             const studentsResponse = await axios.get(
-              `http://localhost:5024/api/instructor/getUsersInCoursebyInstructorId/${instructor._id}`,
+              `${API_URL}/api/instructor/getUsersInCoursebyInstructorId/${instructor._id}`,
               { withCredentials: true }
             );
 

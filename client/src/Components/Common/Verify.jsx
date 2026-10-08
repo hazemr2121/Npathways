@@ -19,6 +19,7 @@ import EmailIcon from "@mui/icons-material/Email";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import LoginIcon from "@mui/icons-material/Login";
+import { API_URL } from "../../config.js";
 
 function Verify() {
   const { token } = useParams();
@@ -41,7 +42,7 @@ function Verify() {
       try {
         // Make API call to verify the token
         const response = await axios.get(
-          `http://localhost:5024/api/user/VerifyEmail/${token}`
+          `${API_URL}/api/user/VerifyEmail/${token}`
         );
 
         setVerificationStatus("success");

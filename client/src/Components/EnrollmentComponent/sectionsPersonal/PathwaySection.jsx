@@ -12,6 +12,7 @@ import {
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import axios from "axios";
+import { API_URL } from "../../../config.js";
 
 const FormSection = ({
   title,
@@ -81,7 +82,7 @@ export default function PathwaySection({
     const fetchPathways = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:5024/api/pathway/student",
+          `${API_URL}/api/pathway/student`,
           {
             withCredentials: true,
             headers: {

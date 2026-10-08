@@ -12,6 +12,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import CourseCard from "./CourseCard";
 import certificateImage from "/Certification.jpg";
 import axios from "axios";
+import { API_URL } from "../../../config.js";
 
 export default function CertificatesSection() {
   const [certificates, setCertificates] = useState([]);
@@ -24,7 +25,7 @@ export default function CertificatesSection() {
     const fetchCertificates = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:5024/api/certificate/userCertificates",
+          `${API_URL}/api/certificate/userCertificates`,
           {
             withCredentials: true,
           }

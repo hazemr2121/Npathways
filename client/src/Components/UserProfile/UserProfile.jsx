@@ -3,6 +3,7 @@ import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./UserProfile.css"; // Import the CSS file
 import { AuthContext } from "../../contexts/AuthContext";
+import { API_URL } from "../../config.js";
 
 const UserProfile = () => {
   const { isAuthenticated } = useContext(AuthContext);
@@ -16,7 +17,7 @@ const UserProfile = () => {
     const fetchUserData = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:5024/api/user/${userId}`,
+          `${API_URL}/api/user/${userId}`,
           { withCredentials: true }
         );
         setUserData(response.data);

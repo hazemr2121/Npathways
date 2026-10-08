@@ -24,6 +24,7 @@ import image from "../../assets/Rectangle 72.png";
 
 // Icons
 import SchoolIcon from "@mui/icons-material/School";
+import { API_URL } from "../../config.js";
 
 // Styled components
 const StyledCard = styled(Card)(({ theme }) => ({
@@ -97,7 +98,7 @@ function CoursesCard({ course }) {
       setLoading(true);
       try {
         const response = await axios.get(
-          `http://localhost:5024/api/course/getStudentsCountInCourse/${course._id}`,
+          `${API_URL}/api/course/getStudentsCountInCourse/${course._id}`,
           { withCredentials: true }
         );
         const enrolledStudents = response.data.StudentCount;
@@ -116,7 +117,7 @@ function CoursesCard({ course }) {
       try {
         const userId = localStorage.getItem("userId");
         const response = await axios.get(
-          `http://localhost:5024/api/user/${userId}`,
+          `${API_URL}/api/user/${userId}`,
           { withCredentials: true }
         );
         const enrolledCourses = response.data.courses;

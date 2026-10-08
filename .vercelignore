@@ -1,0 +1,9 @@
+# Only the client and the demo mock API are deployed. Keep the real server (and any
+# .env or uploads it holds) and the admin app out of the upload.
+node_modules
+**/node_modules
+.env
+**/.env
+admin
+/server/*
+!/server/demo

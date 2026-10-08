@@ -27,6 +27,7 @@ import TimelineIcon from "@mui/icons-material/Timeline";
 import HomeIcon from "@mui/icons-material/Home";
 import SchoolIcon from "@mui/icons-material/School";
 import ReplayIcon from "@mui/icons-material/Replay";
+import { API_URL } from "../../config.js";
 
 // Custom styled components
 const ResultPaper = styled(Paper)(({ theme }) => ({
@@ -113,7 +114,7 @@ const FinishedExam = () => {
         // If we have a specific submittedExamId in the URL, fetch that specific exam
         if (submittedExamId) {
           const response = await axios.get(
-            `http://localhost:5024/api/exam/submittedExams/${submittedExamId}`
+            `${API_URL}/api/exam/submittedExams/${submittedExamId}`
           );
           processExamData(response.data);
         }
@@ -124,13 +125,13 @@ const FinishedExam = () => {
 
           if (examIdFromState) {
             const response = await axios.get(
-              `http://localhost:5024/api/exam/submittedExams/${examIdFromState}`
+              `${API_URL}/api/exam/submittedExams/${examIdFromState}`
             );
             processExamData(response.data);
           } else {
             // If no specific ID, fetch all and use the most recent one
             const response = await axios.get(
-              "http://localhost:5024/api/exam/submittedExams"
+              `${API_URL}/api/exam/submittedExams`
             );
             if (response.data && response.data.length > 0) {
               // Sort by submission date and get the most recent one

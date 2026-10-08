@@ -7,6 +7,7 @@ import {
 } from "react";
 import axios from "axios";
 import { io } from "socket.io-client";
+import { API_URL, SOCKETS_ENABLED } from "../config.js";
 
 const ChatContext = createContext();
 
@@ -52,7 +53,9 @@ export const ChatProvider = ({ children }) => {
       : "no user found";
 
   useEffect(() => {
-    const newSocket = io("http://localhost:5024", {
+    if (!SOCKETS_ENABLED) return;
+
+    const newSocket = io(API_URL, {
       query: { userId, userName },
     });
 
@@ -74,7 +77,7 @@ export const ChatProvider = ({ children }) => {
 
   const fetchUsers = async () => {
     try {
-      const response = await axios.get("http://localhost:5024/api/user/all", {
+      const response = await axios.get(`${API_URL}/api/user/all`, {
         withCredentials: true,
       });
       dispatch({ type: "SET_USERS", payload: response.data });
@@ -87,7 +90,7 @@ export const ChatProvider = ({ children }) => {
   const fetchCourses = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:5024/api/course/enrolledCourses",
+        `${API_URL}/api/course/enrolledCourses`,
         { withCredentials: true }
       );
       setCourses(response.data);
@@ -100,7 +103,7 @@ export const ChatProvider = ({ children }) => {
     try {
       dispatch({ type: "SET_LOADING", payload: true });
       const response = await axios.post(
-        `http://localhost:5024/api/chat/${id}`,
+        `${API_URL}/api/chat/${id}`,
         {},
         { withCredentials: true }
       );
@@ -132,7 +135,7 @@ export const ChatProvider = ({ children }) => {
 
         // Send to server
         await axios.post(
-          `http://localhost:5024/api/chat/sendMessage/${state.selectedChatId}`,
+          `${API_URL}/api/chat/sendMessage/${state.selectedChatId}`,
           { message },
           { withCredentials: true }
         );
@@ -157,7 +160,7 @@ export const ChatProvider = ({ children }) => {
   const fetchChats = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:5024/api/chat/getAllChats",
+        `${API_URL}/api/chat/getAllChats`,
         {
           withCredentials: true,
         }

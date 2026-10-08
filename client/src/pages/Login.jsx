@@ -34,6 +34,7 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import SendIcon from "@mui/icons-material/Send";
 import KeyIcon from "@mui/icons-material/Key";
 import axios from "axios";
+import { API_URL } from "../config.js";
 
 const validationSchema = Yup.object().shape({
   email: Yup.string()
@@ -131,7 +132,7 @@ const Login = () => {
     setForgotPasswordStatus(null);
 
     axios
-      .post("http://localhost:5024/api/user/forgetPassword", {
+      .post(`${API_URL}/api/user/forgetPassword`, {
         email: values.email,
       })
       .then((response) => {
@@ -169,7 +170,7 @@ const Login = () => {
   function handleResendVerification() {
     setVerify(false);
     axios
-      .post(`http://localhost:5024/api/user/resendVerifyEmail/`, {
+      .post(`${API_URL}/api/user/resendVerifyEmail/`, {
         email: formik.values.email,
       })
       .then((response) => {

@@ -21,6 +21,7 @@ import CustomStepper from "./CustomStepper";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { EnrollmentContext } from "../../contexts/EnrollmentContext";
+import { API_URL } from "../../config.js";
 
 const ReviewForm = () => {
   const { enrollmentData, setError, setEnrollmentData, setStep } =
@@ -140,7 +141,7 @@ const ReviewForm = () => {
       // console.log("Submitting data:", JSON.stringify(submissionData, null, 2));
 
       const response = await axios.post(
-        "http://localhost:5024/api/enrollment/createEnrollment",
+        `${API_URL}/api/enrollment/createEnrollment`,
         submissionData,
         {
           withCredentials: true,

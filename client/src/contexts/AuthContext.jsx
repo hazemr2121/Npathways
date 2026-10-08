@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router";
+import { API_URL } from "../config.js";
 
 axios.defaults.withCredentials = true;
 
@@ -27,7 +28,7 @@ export const AuthProvider = ({ children }) => {
     try {
       setIsLoading(true);
       response = await axios.post(
-        "http://localhost:5024/api/login",
+        `${API_URL}/api/login`,
         credentials
       );
 
@@ -41,7 +42,7 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem("email", response.data.email);
         if (response.data.pathways.length <= 0) {
           await axios
-            .get(`http://localhost:5024/api/enrollment/userEnrollments`, {
+            .get(`${API_URL}/api/enrollment/userEnrollments`, {
               withCredentials: true,
             })
             .then((res) => {
@@ -82,7 +83,7 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       setIsLoading(true);
-      await axios.delete("http://localhost:5024/api/auth/logout");
+      await axios.delete(`${API_URL}/api/auth/logout`);
       setIsAuthenticated(false);
       setIsStudent(false);
       setIsInstructor(false);
@@ -103,17 +104,17 @@ export const AuthProvider = ({ children }) => {
   const verifyAuth = async () => {
     try {
       setIsLoading(true);
-      // const response = await axios.get("http://localhost:5024/api/auth/verify");
+      // const response = await axios.get(`${API_URL}/api/auth/verify`);
       const userId = localStorage.getItem("userId");
       if (userId) {
         const response = await axios.get(
-          `http://localhost:5024/api/user/${userId}`,
+          `${API_URL}/api/user/${userId}`,
           { withCredentials: true }
         );
         const enrolledCourses = response.data.pathways;
         if (enrolledCourses.length <= 0) {
           await axios
-            .get(`http://localhost:5024/api/enrollment/userEnrollments`, {
+            .get(`${API_URL}/api/enrollment/userEnrollments`, {
               withCredentials: true,
             })
             .then((res) => {
@@ -132,7 +133,7 @@ export const AuthProvider = ({ children }) => {
       const instructorId = localStorage.getItem("instructorID");
       if (instructorId) {
         const response = await axios.get(
-          `http://localhost:5024/api/instructor/`,
+          `${API_URL}/api/instructor/`,
           { withCredentials: true }
         );
         setIsInstructor(true);

@@ -13,6 +13,7 @@ import axios from "axios";
 import React, { useContext, useEffect, useRef, useState } from "react";
 import { AuthContext } from "../../contexts/AuthContext";
 import * as yup from "yup";
+import { API_URL } from "../../config.js";
 
 export default function InstructorProfileSection() {
   const { isAuthenticated } = useContext(AuthContext);
@@ -55,7 +56,7 @@ export default function InstructorProfileSection() {
     formData.append("image", imageFile);
     await axios
       .post(
-        `http://localhost:5024/api/instructor/changeInstructorImage/`,
+        `${API_URL}/api/instructor/changeInstructorImage/`,
         formData,
         {
           headers: {
@@ -82,7 +83,7 @@ export default function InstructorProfileSection() {
     const fetchInstructorData = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:5024/api/instructor/`,
+          `${API_URL}/api/instructor/`,
           { withCredentials: true }
         );
         setInstructorData(response.data);

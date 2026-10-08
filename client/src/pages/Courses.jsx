@@ -29,6 +29,7 @@ import CoursesCard from "../Components/Courses/CoursesCard";
 import SearchIcon from "@mui/icons-material/Search";
 import SchoolIcon from "@mui/icons-material/School";
 import SortIcon from "@mui/icons-material/Sort";
+import { API_URL } from "../config.js";
 
 // Styled components
 const SearchInput = styled(TextField)(({ theme }) => ({
@@ -108,7 +109,7 @@ function Courses() {
       try {
         setLoading(true);
         setError(null);
-        const response = await axios.get("http://localhost:5024/api/course/");
+        const response = await axios.get(`${API_URL}/api/course/`);
         setCourses(response.data);
         setFilteredCourses(response.data);
       } catch (error) {

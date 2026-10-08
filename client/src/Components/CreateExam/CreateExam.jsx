@@ -14,6 +14,7 @@ import RemoveIcon from "@mui/icons-material/Remove";
 import DeleteIcon from "@mui/icons-material/Delete";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
+import { API_URL } from "../../config.js";
 
 const CreateExam = () => {
   const [questions, setQuestions] = useState([
@@ -37,7 +38,7 @@ const CreateExam = () => {
       const fetchExamData = async () => {
         try {
           const response = await axios.get(
-        `http://localhost:5024/api/exam/${examId}`
+        `${API_URL}/api/exam/${examId}`
           );
           const { name, timeLimit, questions } = response.data;
           setSubjectName(name);
@@ -205,13 +206,13 @@ const CreateExam = () => {
     try {
       if (examId) {
         await axios.put(
-          `http://localhost:5024/api/exam/updateExam/${examId}`,
+          `${API_URL}/api/exam/updateExam/${examId}`,
           formattedData
         );
         console.log("Exam updated successfully");
       } else {
         await axios.post(
-          "http://localhost:5024/api/exam/createExam",
+          `${API_URL}/api/exam/createExam`,
           formattedData
         );
         console.log("Exam created successfully");

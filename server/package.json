@@ -6,6 +6,8 @@
   "type": "module",
   "scripts": {
     "start": "nodemon server.js",
+    "demo:api": "node demo/mockServer.js",
+    "seed:demo": "node scripts/seedDemoAccounts.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

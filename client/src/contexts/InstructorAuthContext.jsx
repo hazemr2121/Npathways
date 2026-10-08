@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect } from "react";
 import axios from "axios";
+import { API_URL } from "../config.js";
 
 axios.defaults.withCredentials = true;
 
@@ -20,7 +21,7 @@ export const InstructorAuthProvider = ({ children }) => {
     try {
       setIsLoading(true);
       const response = await axios.post(
-        "http://localhost:5024/api/login",
+        `${API_URL}/api/login`,
         credentials
       );
 
@@ -45,7 +46,7 @@ export const InstructorAuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       setIsLoading(true);
-      await axios.delete("http://localhost:5024/api/instructor/logout");
+      await axios.delete(`${API_URL}/api/instructor/logout`);
       setIsAuthenticated(false);
       setUser(null);
       localStorage.clear();
@@ -63,7 +64,7 @@ export const InstructorAuthProvider = ({ children }) => {
   //   try {
   //     setIsLoading(true);
   //     const response = await axios.get(
-  //       "http://localhost:5024/api/instructor/verify"
+  //       `${API_URL}/api/instructor/verify`
   //     );
 
   //     if (response.data) {

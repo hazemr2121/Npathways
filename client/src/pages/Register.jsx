@@ -14,6 +14,7 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
+import { API_URL } from "../config.js";
 
 const validationSchema = Yup.object().shape({
   firstName: Yup.string()
@@ -49,7 +50,7 @@ const validationSchema = Yup.object().shape({
 
 async function CheckIfEmailExists(email) {
   return axios
-    .post(`http://localhost:5024/api/availableEmail`, { email })
+    .post(`${API_URL}/api/availableEmail`, { email })
     .then((response) => {
       if (response.data.exists) {
         return Promise.reject(new Error("Email already exists"));
@@ -86,7 +87,7 @@ const Register = () => {
       const { agreeToTerms, ...dataToSend } = values;
 
       let { data } = await axios.post(
-        `http://localhost:5024/api/user/signup`,
+        `${API_URL}/api/user/signup`,
         dataToSend
       );
       console.log(data);
@@ -296,7 +297,7 @@ const Register = () => {
                   By creating an account, I agree to our{" "}
                   <a
                     target="_blank"
-                    href="http://localhost:5173/terms-and-conditions"
+                    href="/terms-and-conditions"
                   >
                     Terms of use
                   </a>

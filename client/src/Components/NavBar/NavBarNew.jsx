@@ -46,6 +46,7 @@ import { AuthContext } from "../../contexts/AuthContext";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { debounce } from "lodash";
+import { API_URL } from "../../config.js";
 
 // Add "How It Works" to the navigation items
 let navigationItems = [
@@ -65,7 +66,7 @@ let navigationItems = [
 // Function to fetch courses for search
 const fetchCourses = async () => {
   try {
-    const response = await axios.get("http://localhost:5024/api/course/");
+    const response = await axios.get(`${API_URL}/api/course/`);
     return response.data;
   } catch (error) {
     console.error("Error fetching courses for search:", error);
@@ -79,7 +80,7 @@ const searchCourses = async (query) => {
 
   try {
     const response = await axios.get(
-      `http://localhost:5024/api/course/search?q=${encodeURIComponent(query)}`
+      `${API_URL}/api/course/search?q=${encodeURIComponent(query)}`
     );
     // Limit to 4 results
     return response.data.slice(0, 4);

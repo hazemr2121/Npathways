@@ -10,6 +10,7 @@ import axios from "axios";
 import React from "react";
 import CourseCard from "../Student/MyPathway/CourseCard";
 import bimManagerImage from "../../assets/bim-manager.jpeg";
+import { API_URL } from "../../config.js";
 
 export default function InstructorCourseSection() {
   const [enrolledCourses, setEnrolledCourses] = React.useState([]);
@@ -22,7 +23,7 @@ export default function InstructorCourseSection() {
     const fetchCourses = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:5024/api/instructor/courses",
+          `${API_URL}/api/instructor/courses`,
           {
             withCredentials: true,
           }

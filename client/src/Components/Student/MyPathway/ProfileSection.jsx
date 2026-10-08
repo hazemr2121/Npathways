@@ -23,6 +23,7 @@ import { Grid } from "@mui/material";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { parsePhoneNumberFromString } from "libphonenumber-js";
+import { API_URL } from "../../../config.js";
 
 // Constants from PersonalDetailsForm
 const COUNTRIES = [
@@ -369,7 +370,7 @@ export default function ProfileSection() {
       try {
         // Update user data (first name, last name)
         await axios.patch(
-          `http://localhost:5024/api/student`,
+          `${API_URL}/api/student`,
           {
             firstName: values.firstName,
             lastName: values.lastName,
@@ -380,7 +381,7 @@ export default function ProfileSection() {
         // Only update enrollment data if it exists
         if (enrollmentData && enrollmentData._id) {
           await axios.put(
-            `http://localhost:5024/api/enrollment/updateEnrollment/${enrollmentData._id}`,
+            `${API_URL}/api/enrollment/updateEnrollment/${enrollmentData._id}`,
             {
               GPA: values.gpa,
               address: {
@@ -416,7 +417,7 @@ export default function ProfileSection() {
     imageForm.append("image", file);
     try {
       const res = await axios.post(
-        `http://localhost:5024/api/user/changUserImage/`,
+        `${API_URL}/api/user/changUserImage/`,
         imageForm,
         {
           headers: { "Content-Type": "multipart/form-data" },
@@ -461,7 +462,7 @@ export default function ProfileSection() {
     const fetchData = async () => {
       try {
         const userRes = await axios.get(
-          `http://localhost:5024/api/user/${userId}`,
+          `${API_URL}/api/user/${userId}`,
           {
             withCredentials: true,
           }
@@ -481,7 +482,7 @@ export default function ProfileSection() {
       try {
         // Try to fetch enrollment data
         const enrollmentRes = await axios.get(
-          `http://localhost:5024/api/enrollment/user/${userId}`,
+          `${API_URL}/api/enrollment/user/${userId}`,
           {
             withCredentials: true,
           }

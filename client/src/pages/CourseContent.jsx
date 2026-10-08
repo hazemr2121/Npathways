@@ -28,6 +28,7 @@ import axios from "axios";
 import bimManagerImage from "../assets/bim-manager.jpeg";
 import instructorImage from "../assets/instructorImage.png";
 import { AuthContext } from "../contexts/AuthContext";
+import { API_URL } from "../config.js";
 
 export default function CourseContent() {
   const { id: courseId } = useParams();
@@ -45,7 +46,7 @@ export default function CourseContent() {
 
       try {
         const response = await axios.get(
-          "http://localhost:5024/api/exam/submittedExams"
+          `${API_URL}/api/exam/submittedExams`
         );
         setSubmittedExams(response.data);
       } catch (error) {
@@ -87,7 +88,7 @@ export default function CourseContent() {
         setLoading(true);
         // Using axios instead of fetch
         const response = await axios.get(
-          `http://localhost:5024/api/course/${courseId}`
+          `${API_URL}/api/course/${courseId}`
         );
 
         // Axios automatically parses JSON

@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "./ExamPage.css";
 import { Link, useNavigate } from "react-router-dom";
+import { API_URL } from "../../config.js";
 
 export default function ExamPage() {
   const [exams, setExams] = useState([]);
@@ -16,7 +17,7 @@ export default function ExamPage() {
   }
   async function getExams() {
     try {
-      const response = await axios.get(`http://localhost:5024/api/exam/`);
+      const response = await axios.get(`${API_URL}/api/exam/`);
       console.log(response);
       setExams(response.data);
     } catch (error) {
@@ -30,7 +31,7 @@ export default function ExamPage() {
   async function deleteExam(examId) {
     try {
       const response = await axios.delete(
-        `http://localhost:5024/api/exam/deleteExam/${examId}`
+        `${API_URL}/api/exam/deleteExam/${examId}`
       );
       console.log("Exam deleted successfully:", response.data);
       getExams();
