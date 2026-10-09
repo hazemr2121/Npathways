@@ -34,7 +34,7 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import SendIcon from "@mui/icons-material/Send";
 import KeyIcon from "@mui/icons-material/Key";
 import axios from "axios";
-import { API_URL } from "../config.js";
+import { API_URL, DEMO_ACCOUNTS } from "../config.js";
 
 const validationSchema = Yup.object().shape({
   email: Yup.string()
@@ -357,6 +357,67 @@ const Login = () => {
                 >
                   Enter your credentials to continue
                 </Typography>
+
+                {DEMO_ACCOUNTS.length > 0 && (
+                  <Box
+                    sx={{
+                      mb: 3,
+                      p: 2,
+                      borderRadius: 2,
+                      border: "1px dashed #46c98b",
+                      bgcolor: "#e8f8f0",
+                    }}
+                  >
+                    <Typography
+                      variant="subtitle2"
+                      sx={{ fontWeight: 600, color: "#0B162C", mb: 1 }}
+                    >
+                      Demo accounts — click one to fill the form
+                    </Typography>
+                    {DEMO_ACCOUNTS.map((account) => (
+                      <Box
+                        key={account.email}
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          gap: 2,
+                          py: 0.75,
+                        }}
+                      >
+                        <Box sx={{ minWidth: 0 }}>
+                          <Typography variant="caption" color="text.secondary">
+                            {account.label}
+                          </Typography>
+                          <Typography
+                            variant="body2"
+                            sx={{ fontFamily: "monospace", wordBreak: "break-all" }}
+                          >
+                            {account.email} / {account.password}
+                          </Typography>
+                        </Box>
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          onClick={() =>
+                            formik.setValues({
+                              email: account.email,
+                              password: account.password,
+                            })
+                          }
+                          sx={{
+                            flexShrink: 0,
+                            color: "#3ab77a",
+                            borderColor: "#46c98b",
+                            textTransform: "none",
+                          }}
+                        >
+                          Use
+                        </Button>
+                      </Box>
+                    ))}
+                  </Box>
+                )}
 
                 {apiError && (
                   <Alert
